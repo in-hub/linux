@@ -19,7 +19,7 @@
 #include <linux/pinctrl/consumer.h>
 #include <linux/mod_devicetable.h>
 
-#define USB_GPIO_DEBOUNCE_MS	20	/* ms */
+#define USB_GPIO_DEBOUNCE_MS	100	/* ms */
 
 struct usb_extcon_info {
 	struct device *dev;
