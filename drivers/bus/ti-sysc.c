@@ -2000,9 +2000,8 @@ static int sysc_child_add_named_clock(struct sysc *ddata,
 
 	clk = clk_get(child, name);
 	if (!IS_ERR(clk)) {
-		clk_put(clk);
-
-		return -EEXIST;
+		error = -EEXIST;
+		goto put_clk;
 	}
 
 	clk = clk_get(ddata->dev, name);
@@ -2012,7 +2011,7 @@ static int sysc_child_add_named_clock(struct sysc *ddata,
 	l = clkdev_create(clk, name, dev_name(child));
 	if (!l)
 		error = -ENOMEM;
-
+put_clk:
 	clk_put(clk);
 
 	return error;
