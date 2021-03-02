@@ -2051,8 +2051,6 @@ static const struct usb_device_id option_ids[] = {
 	  .driver_info = RSVD(6) },
 	{ USB_DEVICE(ALCATEL_VENDOR_ID, 0x0052),
 	  .driver_info = RSVD(6) },
-	{ USB_DEVICE(ALCATEL_VENDOR_ID, 0x00b6),
-	  .driver_info = RSVD(3) },
 	{ USB_DEVICE(ALCATEL_VENDOR_ID, 0x00b7),
 	  .driver_info = RSVD(5) },
 	{ USB_DEVICE(ALCATEL_VENDOR_ID, ALCATEL_PRODUCT_L100V),
