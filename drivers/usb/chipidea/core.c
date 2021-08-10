@@ -534,6 +534,46 @@ int hw_device_reset(struct ci_hdrc *ci)
 	return 0;
 }
 
+static void usb_roleswitch_workqueue(struct work_struct *work)
+{
+	struct ci_hdrc *ci = container_of(work, struct ci_hdrc, work_dr);
+	struct ci_hdrc_cable *id, *vbus;
+	int ret;
+
+	pm_runtime_get_sync(ci->dev);
+
+	id = &ci->platdata->id_extcon;
+	if (!IS_ERR(id->edev)) {
+		int new_role;
+
+		ci_role_stop(ci);
+		hw_wait_phy_stable();
+
+		ret = extcon_get_state(id->edev, EXTCON_USB_HOST);
+		if (ret) {
+			new_role = CI_ROLE_HOST;
+			dev_info(ci->dev, "switching to host role\n");
+		} else {
+			new_role = CI_ROLE_GADGET;
+			dev_info(ci->dev, "switching to gadget role\n");
+		}
+		ci_role_start(ci, new_role);
+	}
+
+	vbus = &ci->platdata->vbus_extcon;
+	if (!IS_ERR(vbus->edev)) {
+		ret = extcon_get_state(vbus->edev, EXTCON_USB);
+		if (ret)
+			usb_gadget_vbus_connect(&ci->gadget);
+		else
+			usb_gadget_vbus_disconnect(&ci->gadget);
+	}
+
+	pm_runtime_put_sync(ci->dev);
+
+	enable_irq(ci->irq);
+}
+
 static irqreturn_t ci_irq_handler(int irq, void *data)
 {
 	struct ci_hdrc *ci = data;
@@ -609,10 +649,24 @@ static int ci_cable_notifier(struct notifier_block *nb, unsigned long event,
 	struct ci_hdrc_cable *cbl = container_of(nb, struct ci_hdrc_cable, nb);
 	struct ci_hdrc *ci = cbl->ci;
 
-	cbl->connected = event;
-	cbl->changed = true;
+	if (ci->platdata->flags & CI_HDRC_DUAL_ROLE_NOT_OTG) {
+		disable_irq_nosync(ci->irq);
 
-	ci_irq(ci);
+		/*
+		 * This notifier might get called twice in succession,
+		 * once for the ID pin and once for the VBUS pin. Make
+		 * sure we only disable irq in case we successfully add
+		 * work to the work queue.
+		 */
+		if (!queue_work(system_power_efficient_wq, &ci->work_dr))
+			enable_irq(ci->irq);
+	} else {
+		cbl->connected = event;
+		cbl->changed = true;
+
+		ci_irq(ci);
+	}
+
 	return NOTIFY_DONE;
 }
 
@@ -781,6 +835,7 @@ static int ci_get_platdata(struct device *dev,
 		ext_id = extcon_get_edev_by_phandle(dev, 1);
 		if (IS_ERR(ext_id) && PTR_ERR(ext_id) != -ENODEV)
 			return PTR_ERR(ext_id);
+		platdata->flags |= CI_HDRC_DUAL_ROLE_NOT_OTG;
 	}
 
 	cable = &platdata->vbus_extcon;
@@ -1104,7 +1159,15 @@ static int ci_hdrc_probe(struct platform_device *pdev)
 
 	ci_get_otg_capable(ci);
 
+	if (ci->platdata->flags & CI_HDRC_DUAL_ROLE_NOT_OTG)
+		INIT_WORK(&ci->work_dr, usb_roleswitch_workqueue);
+
+	ret = ci_extcon_register(ci);
+	if (ret)
+		goto stop;
+
 	dr_mode = ci->platdata->dr_mode;
+
 	/* initialize role(s) before the interrupt is requested */
 	if (dr_mode == USB_DR_MODE_OTG || dr_mode == USB_DR_MODE_HOST) {
 		ret = ci_hdrc_host_init(ci);
@@ -1170,8 +1233,18 @@ static int ci_hdrc_probe(struct platform_device *pdev)
 
 	if (!ci_otg_is_fsm_mode(ci)) {
 		/* only update vbus status for peripheral */
-		if (ci->role == CI_ROLE_GADGET)
-			ci_handle_vbus_change(ci);
+		if (dr_mode == USB_DR_MODE_PERIPHERAL) {
+			usb_gadget_vbus_connect(&ci->gadget);
+		} else if (ci->role == CI_ROLE_GADGET) {
+			struct ci_hdrc_cable *vbus = &ci->platdata->vbus_extcon;
+
+			/* Use vbus state from extcon if provided */
+			if (!IS_ERR(vbus->edev) &&
+			    extcon_get_state(vbus->edev, EXTCON_USB))
+				usb_gadget_vbus_connect(&ci->gadget);
+			else
+				ci_handle_vbus_change(ci);
+		}
 
 		ret = ci_role_start(ci, ci->role);
 		if (ret) {
@@ -1183,10 +1256,6 @@ static int ci_hdrc_probe(struct platform_device *pdev)
 
 	ret = devm_request_irq(dev, ci->irq, ci_irq_handler, IRQF_SHARED,
 			ci->platdata->name, ci);
-	if (ret)
-		goto stop;
-
-	ret = ci_extcon_register(ci);
 	if (ret)
 		goto stop;
 
