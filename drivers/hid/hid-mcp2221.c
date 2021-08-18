@@ -1185,7 +1185,10 @@ static int mcp2221_probe(struct hid_device *hdev,
 	mcp->gc->can_sleep = 1;
 	mcp->gc->parent = &hdev->dev;
 
+	hid_device_io_start(hdev);
 	ret = devm_gpiochip_add_data(&hdev->dev, mcp->gc, mcp);
+	hid_device_io_stop(hdev);
+
 	if (ret)
 		return ret;
 #endif
