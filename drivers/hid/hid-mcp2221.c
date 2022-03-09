@@ -150,7 +150,7 @@ struct mcp2221 {
  * Default i2c bus clock frequency 400 kHz. Modify this if you
  * want to set some other frequency (min 50 kHz - max 400 kHz).
  */
-static uint i2c_clk_freq = 400;
+static uint i2c_clk_freq = 100;
 
 /* Synchronously send output report to the device */
 static int mcp_send_report(struct mcp2221 *mcp,
