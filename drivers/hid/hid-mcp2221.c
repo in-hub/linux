@@ -61,6 +61,7 @@ enum {
 };
 
 #define MCP_NGPIO	4
+#define MCP_PASSWD_LEN	8
 
 /* MCP GPIO set command layout */
 struct mcp_set_gpio {
@@ -84,6 +85,48 @@ struct mcp_get_gpio {
 	} gpio[MCP_NGPIO];
 } __packed;
 
+/* MCP GP settings */
+enum {
+	MCP2221_GP_FUNC_GPIO = 0x00, /* GPIO operation */
+	MCP2221_GP_FUNC_DEDICATED = 0x01, /* dedicated function operation */
+	MCP2221_GP_FUNC_ALT0 = 0x02, /* alternate function 0 */
+	MCP2221_GP_FUNC_ALT1 = 0x03, /* alternate function 1 */
+	MCP2221_GP_FUNC_ALT2 = 0x04, /* alternate function 2 */
+	MCP2221_GP_GPIO_DIR_IN = 0x08, /* GPIO input mode */
+	MCP2221_GP_GPIO_OUT_VALUE = 0x10, /* GPIO output value */
+};
+
+/* buffer layout for the MCP2221_GET_SRAM_SETTINGS command */
+struct mcp_set_sram_settings {
+	u8 cmd;
+	u8 dummy;
+	u8 clk_out_div;
+	u8 dac_voltage_ref;
+	u8 dac_output_value;
+	u8 adc_voltage_ref;
+	u8 interrupt_detection;
+	u8 alter_gp_settings;
+	u8 gp_settings[MCP_NGPIO];
+} __packed;
+
+/* buffer layout for the MCP2221_SET_SRAM_SETTINGS command */
+struct mcp_get_sram_settings {
+	u8 cmd;
+	u8 dummy;
+	u8 len_chip_settings;
+	u8 len_gp_settings;
+	u8 init_values;
+	u8 clk_out_div;
+	u8 dac_settings;
+	u8 interrupt_adc_settings;
+	u16 usb_vid;
+	u16 usb_pid;
+	u8 usb_pwr_attrs;
+	u8 usb_req_current;
+	u8 password[MCP_PASSWD_LEN];
+	u8 gp_settings[MCP_NGPIO];
+} __packed;
+
 /*
  * There is no way to distinguish responses. Therefore next command
  * is sent only after response to previous has been received. Mutex
@@ -104,6 +147,8 @@ struct mcp2221 {
 	u8 gp_idx;
 	u8 gpio_dir;
 	u8 mode[4];
+	u8 gp_default_settings[MCP_NGPIO];
+	u8 gp_runtime_settings[MCP_NGPIO];
 #if IS_REACHABLE(CONFIG_IIO)
 	struct iio_chan_spec iio_channels[3];
 	u16 adc_values[3];
@@ -691,6 +736,63 @@ static int mcp_gpio_get_direction(struct gpio_chip *gc,
 }
 #endif
 
+static int mcp_get_gp_default_settings(struct mcp2221 *mcp)
+{
+	int ret;
+
+	mcp->txbuf[0] = MCP2221_GET_SRAM_SETTINGS;
+
+	mutex_lock(&mcp->lock);
+	ret = mcp_send_data_req_status(mcp, mcp->txbuf, 1);
+	mutex_unlock(&mcp->lock);
+
+	return ret;
+}
+
+static int mcp_configure_gp(struct mcp2221 *mcp, unsigned int offset, u8 val)
+{
+	int ret;
+
+	memset(mcp->txbuf, 0, sizeof(struct mcp_set_sram_settings));
+
+	mcp->txbuf[0] = MCP2221_SET_SRAM_SETTINGS;
+	mcp->txbuf[offsetof(struct mcp_set_sram_settings, alter_gp_settings)] = 0x80;
+
+	mcp->gp_runtime_settings[offset] = val;
+	mcp->gp_idx = offsetof(struct mcp_set_sram_settings, gp_settings[0]);
+	memcpy(&mcp->txbuf[mcp->gp_idx], mcp->gp_runtime_settings,
+			sizeof(mcp->gp_runtime_settings));
+
+	mutex_lock(&mcp->lock);
+	ret = mcp_send_data_req_status(mcp, mcp->txbuf, sizeof(struct mcp_set_sram_settings));
+	mutex_unlock(&mcp->lock);
+
+	return ret;
+}
+
+static int mcp_gpio_request(struct gpio_chip *gc, unsigned int offset)
+{
+	int ret;
+	struct mcp2221 *mcp = gpiochip_get_data(gc);
+
+	ret = mcp_configure_gp(mcp, offset, MCP2221_GP_FUNC_GPIO |
+					MCP2221_GP_GPIO_DIR_IN);
+	if (ret) {
+		hid_err(mcp->hdev, "failed to set GP function\n");
+		return ret;
+	}
+
+	return ret;
+}
+
+static void mcp_gpio_free(struct gpio_chip *gc, unsigned int offset)
+{
+	struct mcp2221 *mcp = gpiochip_get_data(gc);
+
+	if (mcp_configure_gp(mcp, offset, mcp->gp_default_settings[offset]))
+		hid_warn(mcp->hdev, "failed to restore GP function\n");
+}
+
 /* Gives current state of i2c engine inside mcp2221 */
 static int mcp_get_i2c_eng_state(struct mcp2221 *mcp,
 				u8 *data, u8 idx)
@@ -853,6 +955,10 @@ static int mcp2221_raw_event(struct hid_device *hdev,
 	case MCP2221_GET_SRAM_SETTINGS:
 		switch (data[1]) {
 		case MCP2221_SUCCESS:
+			int offset = offsetof(struct mcp_get_sram_settings, gp_settings[0]);
+
+			memcpy(mcp->gp_default_settings, &data[offset],
+							sizeof(mcp->gp_default_settings));
 			memcpy(&mcp->mode, &data[22], 4);
 #if IS_REACHABLE(CONFIG_IIO)
 			mcp->dac_value = data[6] & GENMASK(4, 0);
@@ -1180,6 +1286,8 @@ static int mcp2221_probe(struct hid_device *hdev,
 	mcp->gc->get_direction = mcp_gpio_get_direction;
 	mcp->gc->set = mcp_gpio_set;
 	mcp->gc->get = mcp_gpio_get;
+	mcp->gc->request = mcp_gpio_request;
+	mcp->gc->free = mcp_gpio_free;
 	mcp->gc->ngpio = MCP_NGPIO;
 	mcp->gc->base = -1;
 	mcp->gc->can_sleep = 1;
@@ -1197,6 +1305,18 @@ static int mcp2221_probe(struct hid_device *hdev,
 	INIT_DELAYED_WORK(&mcp->init_work, mcp_init_work);
 	schedule_delayed_work(&mcp->init_work, msecs_to_jiffies(100));
 #endif
+
+	hid_device_io_start(hdev);
+	ret = mcp_get_gp_default_settings(mcp);
+	hid_device_io_stop(hdev);
+
+	if (ret) {
+		hid_err(mcp->hdev, "failed to get GP default settings\n");
+		return -EIO;
+	}
+
+	memcpy(mcp->gp_runtime_settings, mcp->gp_default_settings,
+					sizeof(mcp->gp_default_settings));
 
 	return 0;
 }
