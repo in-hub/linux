@@ -9,6 +9,7 @@
 
 #include <linux/device.h>
 #include <linux/cdev.h>
+#include <linux/slab.h>
 #include <linux/iio/types.h>
 #include <linux/of.h>
 /* IIO TODO LIST */
@@ -672,19 +673,18 @@ static inline void *iio_device_get_drvdata(struct iio_dev *indio_dev)
 	return dev_get_drvdata(&indio_dev->dev);
 }
 
-/* Can we make this smaller? */
-#define IIO_ALIGN L1_CACHE_BYTES
+#define IIO_DMA_MINALIGN ARCH_KMALLOC_MINALIGN
 struct iio_dev *iio_device_alloc(int sizeof_priv);
 
 static inline void *iio_priv(const struct iio_dev *indio_dev)
 {
-	return (char *)indio_dev + ALIGN(sizeof(struct iio_dev), IIO_ALIGN);
+	return (char *)indio_dev + ALIGN(sizeof(struct iio_dev), IIO_DMA_MINALIGN);
 }
 
 static inline struct iio_dev *iio_priv_to_dev(void *priv)
 {
 	return (struct iio_dev *)((char *)priv -
-				  ALIGN(sizeof(struct iio_dev), IIO_ALIGN));
+				  ALIGN(sizeof(struct iio_dev), IIO_DMA_MINALIGN));
 }
 
 void iio_device_free(struct iio_dev *indio_dev);
