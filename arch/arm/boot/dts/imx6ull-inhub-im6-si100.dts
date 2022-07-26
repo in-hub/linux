@@ -1,0 +1,158 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2021 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6ull-inhub-im6.dtsi"
+
+/ {
+	model = "in.hub IM6-SI100 Board";
+	compatible = "inhub,im6-si100", "fsl,imx6ull";
+
+	gpio_buttons: gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_keys>;
+
+		button-1 {
+			label = "BTN1";
+			linux,code = <KEY_1>;
+			gpios = <&gpio3 10 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	pwmleds {
+		compatible = "pwm-leds";
+
+		pwm1 {
+			label = "pwm1";
+			pwms = <&pwm1 0 50000 0>;
+			max-brightness = <100>;
+		};
+
+		pwm2 {
+			label = "pwm2";
+			pwms = <&pwm2 0 50000 0>;
+			max-brightness = <100>;
+		};
+
+		pwm3 {
+			label = "pwm3";
+			pwms = <&pwm3 0 50000 0>;
+			max-brightness = <100>;
+		};
+
+		pwm4 {
+			label = "pwm4";
+			pwms = <&pwm4 0 50000 0>;
+			max-brightness = <100>;
+		};
+
+		pwm5 {
+			label = "pwm5";
+			pwms = <&pwm5 0 50000 0>;
+			max-brightness = <100>;
+		};
+
+		pwm6 {
+			label = "pwm6";
+			pwms = <&pwm6 0 50000 0>;
+			max-brightness = <100>;
+		};
+
+		pwm7 {
+			label = "pwm7";
+			pwms = <&pwm7 0 50000 0>;
+			max-brightness = <100>;
+		};
+
+		pwm8 {
+			label = "pwm8";
+			pwms = <&pwm8 0 50000 0>;
+			max-brightness = <100>;
+		};
+	};
+};
+
+&iomuxc {
+	pinctrl-0 = <&pinctrl_gpio3>;
+
+	pinctrl_pwm1: pwm1-grp {
+		fsl,pins = <
+			MX6UL_PAD_ENET1_RX_DATA0__PWM1_OUT	0x79
+		>;
+	};
+	pinctrl_pwm2: pwm2-grp {
+		fsl,pins = <
+			MX6UL_PAD_ENET1_RX_DATA1__PWM2_OUT	0x79
+		>;
+	};
+	pinctrl_pwm3: pwm3-grp {
+		fsl,pins = <
+			MX6UL_PAD_LCD_DATA02__PWM3_OUT		0x79
+		>;
+	};
+	pinctrl_pwm8: pwm8-grp {
+		fsl,pins = <
+			MX6UL_PAD_CSI_HSYNC__PWM8_OUT		0x79
+		>;
+	};
+
+	pinctrl_gpio_keys: gpio-keys-grp {
+		fsl,pins = <
+			MX6UL_PAD_LCD_DATA05__GPIO3_IO10	0xf070 /* SODIMM 72 - BTN1 */
+		>;
+	};
+
+};
+
+&pwm1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm1>;
+	#pwm-cells = <3>;
+};
+
+&pwm2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm2>;
+	#pwm-cells = <3>;
+};
+
+&pwm3 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm3>;
+	#pwm-cells = <3>;
+};
+
+&pwm4 {
+	status = "okay";
+};
+
+&pwm5 {
+	status = "okay";
+};
+
+&pwm6 {
+	status = "okay";
+};
+
+&pwm7 {
+	status = "okay";
+};
+
+&pwm8 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm8>;
+	#pwm-cells = <3>;
+};
+
+&usbotg2 {
+	status = "okay";
+};
+
