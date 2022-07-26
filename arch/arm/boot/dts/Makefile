@@ -588,6 +588,7 @@ dtb-$(CONFIG_SOC_IMX6UL) += \
 	imx6ull-phytec-segin-lc-rdk-nand.dtb \
 	imx6ull-inhub-im6-co100.dtb \
 	imx6ull-inhub-im6-se100.dtb \
+	imx6ull-inhub-im6-si100.dtb \
 	imx6ulz-14x14-evk.dtb
 dtb-$(CONFIG_SOC_IMX7D) += \
 	imx7d-cl-som-imx7.dtb \
