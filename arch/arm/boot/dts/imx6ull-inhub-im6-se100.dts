@@ -40,7 +40,7 @@
 
 	pinctrl_gpio_adc1: gpio-adc1-grp {
 		fsl,pins = <
-			MX6UL_PAD_NAND_DQS__GPIO4_IO16		0x14 /* SODIMM 101 - ACUREN */
+			MX6UL_PAD_CSI_DATA00__GPIO4_IO21 0x14 /* SODIMM 101 - ACUREN */
 		>;
 	};
 };
