@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2022 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "am335x-inhub-gm100.dts"
+
+/ {
+	model = "TURCK IM18-CCM60";
+	compatible = "ti,am335x-duoSol-I-xCom1", "turck,im18-ccm60", "ti,am33xx";
+};
