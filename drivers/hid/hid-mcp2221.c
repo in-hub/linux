@@ -52,6 +52,7 @@ enum {
 	MCP2221_I2C_ADDR_NACK = 0x25,
 	MCP2221_I2C_READ_PARTIAL = 0x54,
 	MCP2221_I2C_READ_COMPL = 0x55,
+	MCP2221_I2C_DATA_ERROR = 0x7F,
 	MCP2221_ALT_F_NOT_GPIOV = 0xEE,
 	MCP2221_ALT_F_NOT_GPIOD = 0xEF,
 };
@@ -1004,7 +1005,7 @@ static int mcp2221_raw_event(struct hid_device *hdev,
 				mcp->status = 0;
 				break;
 			}
-			if (data[3] == 127) {
+			if (data[3] == MCP2221_I2C_DATA_ERROR) {
 				mcp->status = -EIO;
 				break;
 			}
