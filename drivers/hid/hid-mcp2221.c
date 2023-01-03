@@ -46,6 +46,9 @@ enum {
 	MCP2221_I2C_MASK_ADDR_NACK = 0x40,
 	MCP2221_I2C_WRADDRL_SEND = 0x21,
 	MCP2221_I2C_ADDR_NACK = 0x25,
+	MCP2221_I2C_READ_ERROR = 0x41,
+	MCP2221_I2C_READ_BUSY1 = 0x50,
+	MCP2221_I2C_READ_BUSY2 = 0x53,
 	MCP2221_I2C_READ_COMPL = 0x55,
 	MCP2221_I2C_DATA_ERROR = 0x7F,
 	MCP2221_ALT_F_NOT_GPIOV = 0xEE,
@@ -307,6 +310,7 @@ static int mcp_i2c_smbus_read(struct mcp2221 *mcp,
 				u8 smbus_len, u8 *smbus_buf)
 {
 	int ret;
+	int retries;
 	u16 total_len;
 
 	mcp->txbuf[0] = type;
@@ -330,19 +334,33 @@ static int mcp_i2c_smbus_read(struct mcp2221 *mcp,
 
 	mcp->rxbuf_idx = 0;
 
+	retries = 0;
+
 	do {
+		usleep_range(980, 1000);
+
 		memset(mcp->txbuf, 0, 4);
 		mcp->txbuf[0] = MCP2221_I2C_GET_DATA;
 
 		ret = mcp_send_data_req_status(mcp, mcp->txbuf, 1);
+		if (ret == -EAGAIN)
+		{
+			if (++retries > 10)
+			{
+				return -EIO;
+			}
+			continue;
+		}
+
 		if (ret)
 			return ret;
+
+		retries = 0;
 
 		ret = mcp_chk_last_cmd_status(mcp);
 		if (ret)
 			return ret;
 
-		usleep_range(980, 1000);
 	} while (mcp->rxbuf_idx < total_len);
 
 	return ret;
@@ -878,6 +896,13 @@ static int mcp2221_raw_event(struct hid_device *hdev,
 				break;
 			}
 			mcp->status = -EIO;
+			break;
+		case MCP2221_I2C_READ_ERROR:
+			if (data[2] == MCP2221_I2C_READ_BUSY1 || data[2] == MCP2221_I2C_READ_BUSY1)
+			{
+				mcp->status = -EAGAIN;
+				break;
+			}
 			break;
 		default:
 			mcp->status = -EIO;
