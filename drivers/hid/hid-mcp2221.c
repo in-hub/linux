@@ -313,13 +313,13 @@ static int mcp_i2c_smbus_read(struct mcp2221 *mcp,
 	if (msg) {
 		mcp->txbuf[1] = msg->len & 0xff;
 		mcp->txbuf[2] = msg->len >> 8;
-		mcp->txbuf[3] = (u8)(msg->addr << 1);
+		mcp->txbuf[3] = (u8)(msg->addr << 1) | 0x01;
 		total_len = msg->len;
 		mcp->rxbuf = msg->buf;
 	} else {
 		mcp->txbuf[1] = smbus_len;
 		mcp->txbuf[2] = 0;
-		mcp->txbuf[3] = (u8)(smbus_addr << 1);
+		mcp->txbuf[3] = (u8)(smbus_addr << 1) | 0x01;
 		total_len = smbus_len;
 		mcp->rxbuf = smbus_buf;
 	}
