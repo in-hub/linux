@@ -345,6 +345,16 @@ config SENSORS_APDS990X
 	   To compile this driver as a module, choose M here: the
 	   module will be called apds990x. If unsure, say N here.
 
+config SENSORS_VL53L1X
+	 tristate "ST VL53L1X sensor"
+	 depends on I2C
+	 ---help---
+	   Say Y here if you want to build a driver for ST VL53L1X
+	   sensor.
+
+	   To compile this driver as a module, choose M here: the
+	   module will be called st_tof_module. If unsure, say N here.
+
 config HMC6352
 	tristate "Honeywell HMC6352 compass"
 	depends on I2C
