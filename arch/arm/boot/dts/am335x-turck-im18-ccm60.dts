@@ -12,6 +12,10 @@
 	compatible = "ti,am335x-duoSol-I-xCom1", "turck,im18-ccm60", "ti,am33xx";
 	/delete-node/ leds;
 
+	st_tof {
+		compatible = "st,tof";
+	};
+
 	leds {
 		compatible = "gpio-leds";
 
