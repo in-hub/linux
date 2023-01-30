@@ -4,7 +4,7 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/slab.h>
-#include <linux/i2c.h>
+#include <linux/platform_device.h>
 #include <linux/mutex.h>
 #include <linux/delay.h>
 #include <linux/interrupt.h>
@@ -20,16 +20,9 @@
 
 #define ST_TOF_IOCTL_WFI 1
 
-#define IRQ_GPIO 20
-
 static struct miscdevice st_tof_miscdev;
 static wait_queue_head_t wq;
 static int intr_ready_flag = -1;
-static int intr_gpio_nb = IRQ_GPIO;
-static unsigned int st_tof_irq_num;
-
-module_param(intr_gpio_nb, int, 0000);
-MODULE_PARM_DESC(intr_gpio_nb, "select gpio# to use for vl53l1X interrupt");
 
 static int st_tof_dev_open(struct inode *inode, struct file *file)
 {
@@ -45,7 +38,7 @@ static int st_tof_dev_release(struct inode *inode, struct file *file)
 }
 
 static long st_tof_dev_ioctl(struct file *file,
-			     unsigned int cmd, unsigned long arg)
+				 unsigned int cmd, unsigned long arg)
 {
 
 	/* pr_debug("st_tof_dev_ioctl : cmd = %u\n", cmd); */
@@ -80,51 +73,69 @@ static irqreturn_t st_tof_intr_handler(int st_tof_irq_num, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static int __init st_tof_module_init(void)
+static int st_tof_probe(struct platform_device *pdev)
 {
-
-	unsigned long irqflags;
-	int ret;
-
-	st_tof_irq_num = gpio_to_irq(intr_gpio_nb);
-	pr_err("IRQ = %u, GPIO = %u\n", st_tof_irq_num, intr_gpio_nb);
-	/* irqflags = IRQF_TRIGGER_FALLING|IRQF_ONESHOT; */
-	irqflags = IRQF_TRIGGER_RISING | IRQF_ONESHOT;
+	struct device *dev = &pdev->dev;
+	struct gpio_desc *intr_gpiod;
+	int irq, ret;
 
 	init_waitqueue_head(&wq);
 
-	ret = request_irq(st_tof_irq_num, st_tof_intr_handler, irqflags,
-			"st_tof_sensor", NULL);
-	if (ret) {
-		pr_err("Failed to register IRQ handler %d\n", ret);
-		return -EPERM;
-	}
+	intr_gpiod = devm_gpiod_get(dev, "intr", GPIOD_IN);
+	if (IS_ERR(intr_gpiod))
+		return dev_err_probe(dev, PTR_ERR(intr_gpiod), "failed to get intr-gpios\n");
+
+	irq = gpiod_to_irq(intr_gpiod);
+	if (irq < 0)
+		return dev_err_probe(dev, irq, "failed to map GPIO to IRQ\n");
+
+	ret = devm_request_threaded_irq(dev,
+									irq,
+									NULL,
+									st_tof_intr_handler,
+									IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+									"st_tof_sensor",
+									pdev);
+	if (ret)
+		return dev_err_probe(dev, ret, "failed to request IRQ\n");
 
 	st_tof_miscdev.minor = MISC_DYNAMIC_MINOR;
 	st_tof_miscdev.name = "st_tof_dev";
 	st_tof_miscdev.fops = &st_tof_dev_ranging_fops;
 
 	ret = misc_register(&st_tof_miscdev);
-	if (ret) {
-		pr_err("Failed to create misc device, err = %d\n", ret);
-		return -EPERM;
-	}
+	if (ret)
+		return dev_err_probe(dev, ret, "Failed to create misc device\n");
 
-	pr_debug("%s(%d)\n", __func__, __LINE__);
 	return 0;
 }
 
-static void __exit st_tof_module_exit(void)
+static void st_tof_remove(struct platform_device *pdev)
 {
-	free_irq(st_tof_irq_num, NULL);
+	(void) pdev;
+
 	misc_deregister(&st_tof_miscdev);
-	pr_debug("%s(%d)\n", __func__, __LINE__);
 }
+
+static const struct of_device_id st_tof_of_match[] = {
+	{ .compatible = "st,tof" },
+	{ },
+};
+
+MODULE_DEVICE_TABLE(of, st_tof_of_match);
+
+static struct platform_driver st_tof_driver = {
+	.driver = {
+		.name = "st_tof",
+		.of_match_table = st_tof_of_match
+	},
+	.probe = st_tof_probe,
+	.remove = st_tof_remove,
+};
+
+module_platform_driver(st_tof_driver);
 
 MODULE_AUTHOR("STMicroelectronics Imaging Division");
 MODULE_DESCRIPTION("ST VL53L1X sensor IT driver");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("1.0.0");
-
-module_init(st_tof_module_init);
-module_exit(st_tof_module_exit);
