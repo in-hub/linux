@@ -198,7 +198,7 @@ static int m41t80_rtc_read_time(struct device *dev, struct rtc_time *tm)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	unsigned char buf[8];
-	int err, flags;
+	int i, ret, flags;
 
 	flags = i2c_smbus_read_byte_data(client, M41T80_REG_FLAGS);
 	if (flags < 0)
@@ -209,11 +209,15 @@ static int m41t80_rtc_read_time(struct device *dev, struct rtc_time *tm)
 		return -EINVAL;
 	}
 
-	err = i2c_smbus_read_i2c_block_data(client, M41T80_REG_SSEC,
-					    sizeof(buf), buf);
-	if (err < 0) {
-		dev_err(&client->dev, "Unable to read date\n");
-		return err;
+	for (i = 0; i < sizeof(buf); i++)
+	{
+		ret = i2c_smbus_read_byte_data(client, M41T80_REG_SSEC+i);
+		if (ret < 0)
+		{
+			dev_err(&client->dev, "Unable to read date %d: %d\n", i, ret);
+			return ret;
+		}
+		buf[i] = (unsigned char)ret;
 	}
 
 	tm->tm_sec = bcd2bin(buf[M41T80_REG_SEC] & 0x7f);
@@ -377,12 +381,18 @@ static int m41t80_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	u8 alarmvals[5];
-	int flags, ret;
+	int i, flags, ret;
 
-	ret = i2c_smbus_read_i2c_block_data(client, M41T80_REG_ALARM_MON,
-					    5, alarmvals);
-	if (ret != 5)
-		return ret < 0 ? ret : -EIO;
+	for (i = 0; i < sizeof(alarmvals); i++)
+	{
+		ret = i2c_smbus_read_byte_data(client, M41T80_REG_ALARM_MON+i);
+		if (ret < 0)
+		{
+			dev_err(&client->dev, "Unable to read alarm %d: %d\n", i, ret);
+			return ret;
+		}
+		alarmvals[i] = (unsigned char)ret;
+	}
 
 	flags = i2c_smbus_read_byte_data(client, M41T80_REG_FLAGS);
 	if (flags < 0)
