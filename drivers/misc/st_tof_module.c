@@ -4,7 +4,7 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/slab.h>
-#include <linux/i2c.h>
+#include <linux/platform_device.h>
 #include <linux/mutex.h>
 #include <linux/delay.h>
 #include <linux/interrupt.h>
@@ -80,14 +80,15 @@ static irqreturn_t st_tof_intr_handler(int st_tof_irq_num, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static int __init st_tof_module_init(void)
+static int st_tof_probe(struct platform_device *pdev)
 {
-
-	unsigned long irqflags;
+	unsigned int irqflags;
 	int ret;
 
+	(void) pdev;
+
 	st_tof_irq_num = gpio_to_irq(intr_gpio_nb);
-	pr_err("IRQ = %u, GPIO = %u\n", st_tof_irq_num, intr_gpio_nb);
+	pr_info("st_tof_module: IRQ = %u, GPIO = %u\n", st_tof_irq_num, intr_gpio_nb);
 	/* irqflags = IRQF_TRIGGER_FALLING|IRQF_ONESHOT; */
 	irqflags = IRQF_TRIGGER_RISING | IRQF_ONESHOT;
 
@@ -110,21 +111,36 @@ static int __init st_tof_module_init(void)
 		return -EPERM;
 	}
 
-	pr_debug("%s(%d)\n", __func__, __LINE__);
 	return 0;
 }
 
-static void __exit st_tof_module_exit(void)
+static int st_tof_remove(struct platform_device *pdev)
 {
+	(void) pdev;
 	free_irq(st_tof_irq_num, NULL);
 	misc_deregister(&st_tof_miscdev);
-	pr_debug("%s(%d)\n", __func__, __LINE__);
+	return 0;
 }
+
+static const struct of_device_id st_tof_of_match[] = {
+	{ .compatible = "st,tof" },
+	{ },
+};
+
+MODULE_DEVICE_TABLE(of, st_tof_of_match);
+
+static struct platform_driver st_tof_driver = {
+	.driver = {
+		.name = "st_tof",
+		.of_match_table = st_tof_of_match
+	},
+	.probe = st_tof_probe,
+	.remove = st_tof_remove,
+};
+
+module_platform_driver(st_tof_driver);
 
 MODULE_AUTHOR("STMicroelectronics Imaging Division");
 MODULE_DESCRIPTION("ST VL53L1X sensor IT driver");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("1.0.0");
-
-module_init(st_tof_module_init);
-module_exit(st_tof_module_exit);
