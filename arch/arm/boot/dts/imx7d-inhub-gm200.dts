@@ -123,6 +123,8 @@
 	assigned-clock-rates = <0>, <100000000>;
 	phy-mode = "mii";
 	phy-handle = <&ethphy1>;
+	phy-reset-gpios = <&gpio4 4 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <10>;
 	status = "okay";
 
 	mdio {
@@ -288,6 +290,7 @@
 			MX7D_PAD_EPDC_GDOE__ENET2_RGMII_TD3			0x11
 			MX7D_PAD_EPDC_BDR0__ENET2_TX_CLK			0x11
 			MX7D_PAD_EPDC_GDRL__ENET2_RGMII_TX_CTL		0x11
+			MX7D_PAD_UART3_RX_DATA__GPIO4_IO4			0x77
 		>;
 	};
 
