@@ -3,10 +3,6 @@
  * Copyright 2019~2020, 2022 NXP
  */
 
-&audio_ipg_clk {
-	clock-frequency = <160000000>;
-};
-
 &dma_ipg_clk {
 	clock-frequency = <160000000>;
 };

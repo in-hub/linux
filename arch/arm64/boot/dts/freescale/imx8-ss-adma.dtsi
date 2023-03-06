@@ -4,5 +4,4 @@
  *	Dong Aisheng <aisheng.dong@nxp.com>
  */
 
-#include "imx8-ss-audio.dtsi"
 #include "imx8-ss-dma.dtsi"
