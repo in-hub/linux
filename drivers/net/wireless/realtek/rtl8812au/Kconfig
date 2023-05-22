@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# RTL8812AU Wireless LAN device configuration
+#
+config RTL8812AU
+	tristate "Realtek 8812AU driver"
+	depends on MAC80211 && USB
+	---help---
+	  This is a driver for RTL8812AU based cards.
+
+if RTL8812AU
+config RTL8812A
+	bool "Realtek RTL8812A support"
+	---help---
+	  Include support for RTL8812A devices.
+
+config RTL8814A
+	bool "Realtek RTL8814A support"
+	---help---
+	  Include support for RTL8814A devices.
+
+config RTL8821A
+	bool "Realtek RTL8821A support"
+	---help---
+	  Include support for RTL8821A devices.
+endif
