@@ -175,7 +175,7 @@ static const u32 imx7d_adc_average_num[] = {
 
 static void imx7d_adc_feature_config(struct imx7d_adc *info)
 {
-	info->adc_feature.clk_pre_div = IMX7D_ADC_ANALOG_CLK_PRE_DIV_4;
+	info->adc_feature.clk_pre_div = IMX7D_ADC_ANALOG_CLK_PRE_DIV_128;
 	info->adc_feature.avg_num = IMX7D_ADC_AVERAGE_NUM_32;
 	info->adc_feature.core_time_unit = 1;
 }
