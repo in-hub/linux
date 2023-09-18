@@ -3,7 +3,8 @@
  * mcp4922.c
  *
  * Driver for Microchip Digital to Analog Converters.
- * Supports MCP4902, MCP4912, and MCP4922.
+ * Supports MCP4902, MCP4912, MCP4921, MCP4922, MCP4801, MCP4802, MCP4811,
+ * MCP4812, MCP4821, and MCP4822.
  *
  * Copyright (c) 2014 EMAC Inc.
  */
@@ -16,14 +17,21 @@
 #include <linux/regulator/consumer.h>
 #include <linux/bitops.h>
 
-#define MCP4922_NUM_CHANNELS	2
-#define MCP4921_NUM_CHANNELS	1
+#define MCP4922_NUM_CHANNELS		2
+#define MCP4921_NUM_CHANNELS		1
+#define MCP48XX_INTERNAL_VREF_MV	2048
 
 enum mcp4922_supported_device_ids {
 	ID_MCP4902,
 	ID_MCP4912,
 	ID_MCP4921,
 	ID_MCP4922,
+	ID_MCP4801,
+	ID_MCP4802,
+	ID_MCP4811,
+	ID_MCP4812,
+	ID_MCP4821,
+	ID_MCP4822,
 };
 
 struct mcp4922_state {
@@ -31,6 +39,7 @@ struct mcp4922_state {
 	unsigned int value[MCP4922_NUM_CHANNELS];
 	unsigned int vref_mv;
 	struct regulator *vref_reg;
+	struct regulator *vdd_reg;
 	u8 mosi[2] __aligned(IIO_DMA_MINALIGN);
 };
 
@@ -47,6 +56,35 @@ struct mcp4922_state {
 		.storagebits = 16,			\
 		.shift = 12 - (bits),			\
 	},						\
+}
+
+static bool mcp4922_needs_vref(int device_id)
+{
+	switch (device_id) {
+	case ID_MCP4902:
+	case ID_MCP4912:
+	case ID_MCP4921:
+	case ID_MCP4922:
+		return true;
+	default:
+		return false;
+	}
+}
+
+static int mcp4922_num_channels(int device_id)
+{
+	switch (device_id) {
+	case ID_MCP4902:
+	case ID_MCP4912:
+	case ID_MCP4922:
+	case ID_MCP4802:
+	case ID_MCP4812:
+	case ID_MCP4822:
+		return MCP4922_NUM_CHANNELS;
+	default:
+		return MCP4921_NUM_CHANNELS;
+	}
+
 }
 
 static int mcp4922_spi_write(struct mcp4922_state *state, u8 addr, u32 val)
@@ -107,11 +145,17 @@ static int mcp4922_write_raw(struct iio_dev *indio_dev,
 	}
 }
 
-static const struct iio_chan_spec mcp4922_channels[4][MCP4922_NUM_CHANNELS] = {
+static const struct iio_chan_spec mcp4922_channels[10][MCP4922_NUM_CHANNELS] = {
 	[ID_MCP4902] = { MCP4922_CHAN(0, 8),	MCP4922_CHAN(1, 8) },
 	[ID_MCP4912] = { MCP4922_CHAN(0, 10),	MCP4922_CHAN(1, 10) },
 	[ID_MCP4921] = { MCP4922_CHAN(0, 12),	{} },
 	[ID_MCP4922] = { MCP4922_CHAN(0, 12),	MCP4922_CHAN(1, 12) },
+	[ID_MCP4801] = { MCP4922_CHAN(0, 8),	{} },
+	[ID_MCP4802] = { MCP4922_CHAN(0, 8),	MCP4922_CHAN(1, 8) },
+	[ID_MCP4811] = { MCP4922_CHAN(0, 10),	{} },
+	[ID_MCP4812] = { MCP4922_CHAN(0, 10),	MCP4922_CHAN(1, 10) },
+	[ID_MCP4821] = { MCP4922_CHAN(0, 12),	{} },
+	[ID_MCP4822] = { MCP4922_CHAN(0, 12),	MCP4922_CHAN(1, 12) },
 };
 
 static const struct iio_info mcp4922_info = {
@@ -132,49 +176,67 @@ static int mcp4922_probe(struct spi_device *spi)
 
 	state = iio_priv(indio_dev);
 	state->spi = spi;
-	state->vref_reg = devm_regulator_get(&spi->dev, "vref");
-	if (IS_ERR(state->vref_reg))
-		return dev_err_probe(&spi->dev, PTR_ERR(state->vref_reg),
-				     "Vref regulator not specified\n");
+	id = spi_get_device_id(spi);
+	if (mcp4922_needs_vref(id->driver_data)) {
+		state->vref_reg = devm_regulator_get(&spi->dev, "vref");
+		if (IS_ERR(state->vref_reg))
+			return dev_err_probe(&spi->dev, PTR_ERR(state->vref_reg),
+					"Vref regulator not specified\n");
 
-	ret = regulator_enable(state->vref_reg);
+		ret = regulator_enable(state->vref_reg);
+		if (ret) {
+			dev_err(&spi->dev, "Failed to enable vref regulator: %d\n",
+					ret);
+			return ret;
+		}
+
+		ret = regulator_get_voltage(state->vref_reg);
+		if (ret < 0) {
+			dev_err(&spi->dev, "Failed to read vref regulator: %d\n",
+					ret);
+			goto error_disable_vref_reg;
+		}
+		state->vref_mv = ret / 1000;
+	} else {
+		state->vref_mv = MCP48XX_INTERNAL_VREF_MV;
+	}
+
+
+	state->vdd_reg = devm_regulator_get(&spi->dev, "vdd");
+	if (IS_ERR(state->vdd_reg)) {
+		ret = dev_err_probe(&spi->dev, PTR_ERR(state->vdd_reg),
+				    "vdd regulator not specified\n");
+		goto error_disable_vref_reg;
+	}
+	ret = regulator_enable(state->vdd_reg);
 	if (ret) {
-		dev_err(&spi->dev, "Failed to enable vref regulator: %d\n",
-				ret);
-		return ret;
+		dev_err(&spi->dev, "Failed to enable vdd regulator: %d\n",
+			ret);
+		goto error_disable_vref_reg;
 	}
-
-	ret = regulator_get_voltage(state->vref_reg);
-	if (ret < 0) {
-		dev_err(&spi->dev, "Failed to read vref regulator: %d\n",
-				ret);
-		goto error_disable_reg;
-	}
-	state->vref_mv = ret / 1000;
 
 	spi_set_drvdata(spi, indio_dev);
-	id = spi_get_device_id(spi);
 	indio_dev->dev.parent = &spi->dev;
 	indio_dev->info = &mcp4922_info;
 	indio_dev->modes = INDIO_DIRECT_MODE;
 	indio_dev->channels = mcp4922_channels[id->driver_data];
-	if (id->driver_data == ID_MCP4921)
-		indio_dev->num_channels = MCP4921_NUM_CHANNELS;
-	else
-		indio_dev->num_channels = MCP4922_NUM_CHANNELS;
+	indio_dev->num_channels = mcp4922_num_channels(id->driver_data);
 	indio_dev->name = id->name;
 
 	ret = iio_device_register(indio_dev);
 	if (ret) {
 		dev_err(&spi->dev, "Failed to register iio device: %d\n",
 				ret);
-		goto error_disable_reg;
+		goto error_disable_vdd_reg;
 	}
 
 	return 0;
+error_disable_vdd_reg:
+	regulator_disable(state->vdd_reg);
+error_disable_vref_reg:
+	if (mcp4922_needs_vref(id->driver_data))
+		regulator_disable(state->vref_reg);
 
-error_disable_reg:
-	regulator_disable(state->vref_reg);
 
 	return ret;
 }
@@ -183,10 +245,14 @@ static int mcp4922_remove(struct spi_device *spi)
 {
 	struct iio_dev *indio_dev = spi_get_drvdata(spi);
 	struct mcp4922_state *state;
+	const struct spi_device_id *id = spi_get_device_id(spi);
 
 	iio_device_unregister(indio_dev);
 	state = iio_priv(indio_dev);
-	regulator_disable(state->vref_reg);
+	regulator_disable(state->vdd_reg);
+	if (mcp4922_needs_vref(id->driver_data)) {
+		regulator_disable(state->vref_reg);
+	}
 
 	return 0;
 }
@@ -196,6 +262,12 @@ static const struct spi_device_id mcp4922_id[] = {
 	{"mcp4912", ID_MCP4912},
 	{"mcp4921", ID_MCP4921},
 	{"mcp4922", ID_MCP4922},
+	{"mcp4801", ID_MCP4801},
+	{"mcp4802", ID_MCP4802},
+	{"mcp4811", ID_MCP4811},
+	{"mcp4812", ID_MCP4812},
+	{"mcp4821", ID_MCP4821},
+	{"mcp4822", ID_MCP4822},
 	{}
 };
 MODULE_DEVICE_TABLE(spi, mcp4922_id);
@@ -211,5 +283,5 @@ static struct spi_driver mcp4922_driver = {
 module_spi_driver(mcp4922_driver);
 
 MODULE_AUTHOR("Michael Welling <mwelling@ieee.org>");
-MODULE_DESCRIPTION("Microchip MCP4902, MCP4912, MCP4922 DAC");
+MODULE_DESCRIPTION("Microchip MCP49XX and MCP48XX DAC");
 MODULE_LICENSE("GPL v2");
