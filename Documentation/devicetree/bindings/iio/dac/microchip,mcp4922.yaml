@@ -23,6 +23,8 @@ properties:
 
   spi-max-frequency: true
 
+  vdd-supply: true
+
   vref-supply: true
 
 additionalProperties: false
@@ -30,6 +32,7 @@ additionalProperties: false
 required:
   - compatible
   - reg
+  - vdd-supply
   - vref-supply
 
 examples:
@@ -41,6 +44,7 @@ examples:
         dac@0 {
             compatible = "microchip,mcp4912";
             reg = <0>;
+            vdd-supply = <&dac_reg>;
             vref-supply = <&dac_vref>;
         };
     };
