@@ -41,11 +41,30 @@ static int ksz8081_phy_fixup(struct phy_device *dev)
 	return 0;
 }
 
+static int lan8831_phy_fixup(struct phy_device *dev)
+{
+	struct regmap *gpr;
+
+	gpr = syscon_regmap_lookup_by_compatible("fsl,imx6ul-iomuxc-gpr");
+	if (!IS_ERR(gpr))
+		regmap_update_bits(gpr, IOMUXC_GPR1, 3 << 13, 3 << 13);
+	else
+		pr_err("failed to find fsl,imx6ul-iomux-gpr regmap\n");
+
+	return 0;
+}
+
+#define PHY_ID_LAN8831 0x221652
+
 static void __init imx6ul_enet_phy_init(void)
 {
 	if (IS_BUILTIN(CONFIG_PHYLIB))
+	{
 		phy_register_fixup_for_uid(PHY_ID_KSZ8081, MICREL_PHY_ID_MASK,
 					   ksz8081_phy_fixup);
+		phy_register_fixup_for_uid(PHY_ID_LAN8831, 0xffffffff,
+					   lan8831_phy_fixup);
+	}
 }
 
 static inline void imx6ul_enet_init(void)
