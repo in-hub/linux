@@ -774,5 +774,3 @@
 
 /delete-node/ &adc1;
 /delete-node/ &adc1_lpcg;
-/delete-node/ &dsp;
-/delete-node/ &dsp_lpcg;
