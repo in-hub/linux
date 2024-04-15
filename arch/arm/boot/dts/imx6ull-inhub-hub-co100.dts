@@ -1,0 +1,95 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2023 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6ull-inhub-xx100.dtsi"
+
+/ {
+	model = "in.hub HUB-CO100 Board";
+	compatible = "inhub,hub-co100", "fsl,imx6ull";
+
+	leds {
+		compatible = "gpio-leds";
+
+		system_green {
+			label = "sygn";
+			gpios = <&gpio1 19 0x0>;
+			default-state = "on";
+		};
+
+		system_red {
+			label = "syrd";
+			gpios = <&gpio1 18 0x0>;
+			default-state = "off";
+			linux,default-trigger = "nand-disk";
+		};
+
+		g1 {
+			label = "g1";
+			gpios = <&gpio1 12 0x0>;
+			default-state = "off";
+		};
+
+		g2 {
+			label = "g2";
+			gpios = <&gpio1 5 0x0>;
+			default-state = "off";
+		};
+
+		gx {
+			label = "gx";
+			gpios = <&gpio1 4 0x0>;
+			default-state = "off";
+		};
+	};
+};
+
+&iomuxc {
+	pinctrl-0 = <&pinctrl_gpio1 &pinctrl_gpio2 &pinctrl_gpio3
+		&pinctrl_gpio4 &pinctrl_gpio5 &pinctrl_gpio6
+		&pinctrl_system_led &pinctrl_led &pinctrl_sensor_enable>;
+
+	pinctrl_sensor_enable: sensor-enable-grp {
+		fsl,pins = <
+			MX6UL_PAD_LCD_DATA05__GPIO3_IO10	0x74 /* SODIMM 72 */
+			MX6UL_PAD_LCD_DATA10__GPIO3_IO15	0x74 /* SODIMM 74 */
+		>;
+	};
+
+	pinctrl_i2c3: i2c3-grp {
+		fsl,pins = <
+			MX6UL_PAD_LCD_DATA01__I2C3_SCL	0x4001b8b0 /* SODIMM 70 */
+			MX6UL_PAD_LCD_DATA00__I2C3_SDA	0x4001b8b0 /* SODIMM 76 */
+		>;
+	};
+
+	pinctrl_i2c4: i2c4-grp {
+		fsl,pins = <
+			MX6UL_PAD_UART2_TX_DATA__I2C4_SCL	0x4001b8b0 /* SODIMM 36 */
+			MX6UL_PAD_UART2_RX_DATA__I2C4_SDA	0x4001b8b0 /* SODIMM 38 */
+		>;
+	};
+
+	pinctrl_led: led-grp {
+		fsl,pins = <
+			MX6UL_PAD_GPIO1_IO04__GPIO1_IO04	0x74 /* SODIMM 19 */
+			MX6UL_PAD_GPIO1_IO05__GPIO1_IO05	0x74 /* SODIMM 21 */
+			MX6UL_PAD_JTAG_TDO__GPIO1_IO12		0x74 /* SODIMM 23 */
+		>;
+	};
+};
+
+&i2c3 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c3>;
+};
+
+&i2c4 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c4>;
+};
