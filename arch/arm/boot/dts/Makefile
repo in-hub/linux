@@ -765,6 +765,7 @@ dtb-$(CONFIG_SOC_AM33XX) += \
 	am335x-shc.dtb \
 	am335x-sbc-t335.dtb \
 	am335x-sl50.dtb \
+	am335x-turck-im18-ccm60.dtb \
 	am335x-wega-rdk.dtb \
 	am335x-osd3358-sm-red.dtb
 dtb-$(CONFIG_ARCH_OMAP4) += \
