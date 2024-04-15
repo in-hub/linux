@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2023 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6ull-colibri-nonwifi.dtsi"
+
+/ {
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	extcon_usbc_det: usbc_det {
+		compatible = "linux,extcon-usb-gpio";
+		debounce = <25>;
+		id-gpio = <&gpio5 2 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_snvs_usbc_det>;
+	};
+
+	reg_usbh_vbus: regulator-usbh-vbus {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbh_reg>;
+		regulator-name = "usbh_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio1 2 GPIO_ACTIVE_LOW>;
+	};
+
+};
+
+&iomuxc {
+	/delete-node/ uart1-grp;
+	/delete-node/ uart1-ctrl1-grp;
+
+	pinctrl_system_led: system-led-grp {
+		fsl,pins = <
+			MX6UL_PAD_UART1_CTS_B__GPIO1_IO18	0x74 /* SODIMM 25 */
+			MX6UL_PAD_UART1_RTS_B__GPIO1_IO19	0x74 /* SODIMM 27 */
+		>;
+	};
+
+	pinctrl_uart1_nortscts: uart1-grp {
+		fsl,pins = <
+			MX6UL_PAD_UART1_TX_DATA__UART1_DTE_RX	0x1b0b1
+			MX6UL_PAD_UART1_RX_DATA__UART1_DTE_TX	0x1b0b1
+		>;
+	};
+};
+
+&iomuxc_snvs {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_snvs_gpio1 &pinctrl_snvs_gpio2 &pinctrl_snvs_gpio3>;
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+&i2c2 {
+	status = "disabled";
+};
+
+&uart1 {
+	status = "okay";
+	pinctrl-0 = <&pinctrl_uart1_nortscts>;
+	/delete-property/ uart-has-rtscts;
+};
+
+&usbotg1 {
+	status = "okay";
+	dr_mode = "peripheral";
+	extcon = <&extcon_usbc_det &extcon_usbc_det>;
+	disable-over-current;
+};
+
+&usbotg2 {
+	vbus-supply = <&reg_usbh_vbus>;
+	over-current-active-low;
+};
+
+&wdog1 {
+	status = "okay";
+};
