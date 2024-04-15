@@ -1,0 +1,216 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2024 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6ull-inhub-xx100.dtsi"
+
+/ {
+	model = "in.hub HUB-EN200";
+	compatible = "inhub,hub-en200", "fsl,imx6ull";
+
+	aliases {
+		mmc0 = &usdhc2;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_leds>;
+
+		status_green {
+			label = "stgn";
+			gpios = <&gpio3 14 0x0>;
+			default-state = "off";
+		};
+
+		status_red {
+			label = "strd";
+			gpios = <&gpio3 13 0x0>;
+			default-state = "off";
+		};
+
+		backplane_green {
+			label = "bpgn";
+			gpios = <&gpio3 18 0x0>;
+			default-state = "off";
+		};
+
+		backplane_red {
+			label = "bprd";
+			gpios = <&gpio3 17 0x0>;
+			default-state = "off";
+		};
+
+		system_green {
+			label = "sygn";
+			gpios = <&gpio3 16 0x0>;
+			default-state = "on";
+		};
+
+		system_red {
+			label = "syrd";
+			gpios = <&gpio3 15 0x0>;
+			default-state = "off";
+			linux,default-trigger = "mmc0";
+		};
+	};
+
+};
+
+/delete-node/ &gpmi;
+
+&iomuxc {
+
+	pinctrl-0 = <&pinctrl_gpio2 &pinctrl_gpio3 &pinctrl_gpio4 &pinctrl_gpio5 &pinctrl_gpio6 &pinctrl_usb2_ctrl>;
+
+	/delete-node/ system-led-grp;
+	/delete-node/ usdhc2-grp;
+	/delete-node/ enet2-grp;
+
+	pinctrl_usb2_ctrl: usb2-ctrl {
+		fsl,pins = <
+			MX6UL_PAD_GPIO1_IO03__GPIO1_IO03 0x000050B0
+		>;
+	};
+
+	pinctrl_leds: leds-grp {
+		fsl,pins = <
+			MX6UL_PAD_LCD_DATA11__GPIO3_IO16	0x74 /* LED1G */
+			MX6UL_PAD_LCD_DATA10__GPIO3_IO15	0x74 /* LED1R */
+			MX6UL_PAD_LCD_DATA13__GPIO3_IO18	0x74 /* LED2G */
+			MX6UL_PAD_LCD_DATA12__GPIO3_IO17	0x74 /* LED2R */
+			MX6UL_PAD_LCD_DATA09__GPIO3_IO14	0x74 /* LED3G */
+			MX6UL_PAD_LCD_DATA08__GPIO3_IO13	0x74 /* LED3R */
+		>;
+	};
+
+	pinctrl_enet2: enet2-grp {
+		fsl,pins = <
+			MX6UL_PAD_GPIO1_IO06__ENET2_MDIO	0x1b0b0
+			MX6UL_PAD_GPIO1_IO07__ENET2_MDC		0x1b0b0
+			MX6UL_PAD_ENET2_RX_DATA0__ENET2_RDATA00	0x1b0b0
+			MX6UL_PAD_ENET2_RX_DATA1__ENET2_RDATA01	0x1b0b0
+			MX6UL_PAD_UART3_TX_DATA__ENET2_RDATA02	0x1b0b0
+			MX6UL_PAD_UART3_RX_DATA__ENET2_RDATA03  0x1b0b0
+			MX6UL_PAD_ENET2_RX_EN__ENET2_RX_EN	0x1b0b0
+			MX6UL_PAD_ENET2_TX_CLK__ENET2_TX_CLK 0x1b0b0
+			MX6UL_PAD_ENET2_TX_DATA0__ENET2_TDATA00	0x1b0b0
+			MX6UL_PAD_ENET2_TX_DATA1__ENET2_TDATA01	0x1b0b0
+			MX6UL_PAD_UART4_TX_DATA__ENET2_TDATA02	0x1b0b0
+			MX6UL_PAD_UART4_RX_DATA__ENET2_TDATA03	0x1b0b0
+			MX6UL_PAD_ENET2_TX_EN__ENET2_TX_EN	0x1b0b0
+			MX6UL_PAD_UART3_CTS_B__ENET2_RX_CLK		0x1b0b0
+			MX6UL_PAD_LCD_DATA16__GPIO3_IO21 0x1b0b0
+			MX6UL_PAD_ENET2_RX_ER__ENET2_RX_ER	0x1b0b0
+			MX6UL_PAD_UART5_RX_DATA__ENET2_COL	0x1b0b0
+			MX6UL_PAD_UART5_TX_DATA__ENET2_CRS	0x1b0b0
+		>;
+	};
+
+	pinctrl_usdhc2: usdhc2grp {
+		fsl,pins = <
+			MX6UL_PAD_NAND_RE_B__USDHC2_CLK		0x10069
+			MX6UL_PAD_NAND_WE_B__USDHC2_CMD		0x17059
+			MX6UL_PAD_NAND_DATA00__USDHC2_DATA0	0x17059
+			MX6UL_PAD_NAND_DATA01__USDHC2_DATA1	0x17059
+			MX6UL_PAD_NAND_DATA02__USDHC2_DATA2	0x17059
+			MX6UL_PAD_NAND_DATA03__USDHC2_DATA3	0x17059
+			MX6UL_PAD_NAND_DATA04__USDHC2_DATA4	0x17059
+			MX6UL_PAD_NAND_DATA05__USDHC2_DATA5	0x17059
+			MX6UL_PAD_NAND_DATA06__USDHC2_DATA6	0x17059
+			MX6UL_PAD_NAND_DATA07__USDHC2_DATA7	0x17059
+		>;
+	};
+
+	pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
+		fsl,pins = <
+			MX6UL_PAD_NAND_RE_B__USDHC2_CLK		0x100b9
+			MX6UL_PAD_NAND_WE_B__USDHC2_CMD		0x170b9
+			MX6UL_PAD_NAND_DATA00__USDHC2_DATA0	0x170b9
+			MX6UL_PAD_NAND_DATA01__USDHC2_DATA1	0x170b9
+			MX6UL_PAD_NAND_DATA02__USDHC2_DATA2	0x170b9
+			MX6UL_PAD_NAND_DATA03__USDHC2_DATA3	0x170b9
+			MX6UL_PAD_NAND_DATA04__USDHC2_DATA4	0x170b9
+			MX6UL_PAD_NAND_DATA05__USDHC2_DATA5	0x170b9
+			MX6UL_PAD_NAND_DATA06__USDHC2_DATA6	0x170b9
+			MX6UL_PAD_NAND_DATA07__USDHC2_DATA7	0x170b9
+		>;
+	};
+
+	pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
+		fsl,pins = <
+			MX6UL_PAD_NAND_RE_B__USDHC2_CLK		0x100f9
+			MX6UL_PAD_NAND_WE_B__USDHC2_CMD		0x170f9
+			MX6UL_PAD_NAND_DATA00__USDHC2_DATA0	0x170f9
+			MX6UL_PAD_NAND_DATA01__USDHC2_DATA1	0x170f9
+			MX6UL_PAD_NAND_DATA02__USDHC2_DATA2	0x170f9
+			MX6UL_PAD_NAND_DATA03__USDHC2_DATA3	0x170f9
+			MX6UL_PAD_NAND_DATA04__USDHC2_DATA4	0x170f9
+			MX6UL_PAD_NAND_DATA05__USDHC2_DATA5	0x170f9
+			MX6UL_PAD_NAND_DATA06__USDHC2_DATA6	0x170f9
+			MX6UL_PAD_NAND_DATA07__USDHC2_DATA7	0x170f9
+		>;
+	};
+};
+
+&ecspi1 {
+	status = "okay";
+
+	spidev0: spi@0 {
+		compatible = "spidev";
+		reg = <0>;
+		spi-max-frequency = <5000000>;
+	};
+};
+
+&fec1 {
+	status = "disabled";
+};
+
+&fec2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_enet2>;
+	phy-mode = "rgmii";
+	phy-handle = <&ethphy0>;
+	status = "okay";
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/delete-node/ ethernet-phy@2;
+
+		ethphy0: ethernet-phy@0 {
+			max-speed = <100>;
+			reg = <3>;
+		};
+	};
+};
+
+&reg_usbh_vbus {
+	gpio = <&gpio1 2 GPIO_ACTIVE_HIGH>;
+	enable-active-high;
+};
+
+&usbotg1 {
+	status = "okay";
+};
+
+&usbotg2 {
+	status = "okay";
+};
+
+&usdhc2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc2>;
+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
+	bus-width = <8>;
+	non-removable;
+	keep-power-in-suspend;
+};
+
