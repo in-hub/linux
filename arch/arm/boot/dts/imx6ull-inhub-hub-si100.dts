@@ -1,0 +1,205 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2024 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6ull-inhub-xx100.dtsi"
+
+/ {
+	model = "in.hub HUB-SI100 Board";
+	compatible = "inhub,hub-si100", "fsl,imx6ull";
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_keys>;
+
+		button-1 {
+			label = "BTN1";
+			linux,code = <KEY_1>;
+			gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
+		};
+
+		button-2 {
+			label = "BTN2";
+			linux,code = <KEY_2>;
+			gpios = <&gpio3 10 GPIO_ACTIVE_LOW>;
+		};
+
+		button-3 {
+			label = "BTN3";
+			linux,code = <KEY_3>;
+			gpios = <&gpio1 29 GPIO_ACTIVE_LOW>;
+		};
+
+		button-4 {
+			label = "BTN4";
+			linux,code = <KEY_4>;
+			gpios = <&gpio1 28 GPIO_ACTIVE_LOW>;
+		};
+
+		button-5 {
+			label = "BTN5";
+			linux,code = <KEY_5>;
+			gpios = <&gpio3 5 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_buzzers>;
+
+		buzzer1 {
+			label = "buzzer1";
+			gpios = <&gpio3 6 0x0>;
+			default-state = "off";
+		};
+	};
+
+	pwmleds {
+		compatible = "pwm-leds";
+
+		pwm1 {
+			label = "pwm1";
+			pwms = <&pwm1 0 50000 0>;
+			max-brightness = <255>;
+		};
+
+		pwm2 {
+			label = "pwm2";
+			pwms = <&pwm2 0 50000 0>;
+			max-brightness = <255>;
+		};
+
+		pwm3 {
+			label = "pwm3";
+			pwms = <&pwm3 0 50000 0>;
+			max-brightness = <255>;
+		};
+
+		pwm4 {
+			label = "pwm4";
+			pwms = <&pwm4 0 50000 0>;
+			max-brightness = <255>;
+		};
+
+		pwm5 {
+			label = "pwm5";
+			pwms = <&pwm5 0 50000 0>;
+			max-brightness = <255>;
+		};
+
+		pwm6 {
+			label = "pwm6";
+			pwms = <&pwm6 0 50000 0>;
+			max-brightness = <255>;
+		};
+
+		pwm7 {
+			label = "pwm7";
+			pwms = <&pwm7 0 50000 0>;
+			max-brightness = <255>;
+		};
+
+		pwm8 {
+			label = "pwm8";
+			pwms = <&pwm8 0 50000 0>;
+			max-brightness = <255>;
+		};
+	};
+};
+
+&iomuxc {
+	pinctrl-0 = <&pinctrl_gpio3>;
+
+	pinctrl_pwm1: pwm1-grp {
+		fsl,pins = <
+			MX6UL_PAD_ENET1_RX_DATA0__PWM1_OUT	0x79
+		>;
+	};
+
+	pinctrl_pwm2: pwm2-grp {
+		fsl,pins = <
+			MX6UL_PAD_ENET1_RX_DATA1__PWM2_OUT	0x79
+		>;
+	};
+
+	pinctrl_pwm3: pwm3-grp {
+		fsl,pins = <
+			MX6UL_PAD_LCD_DATA02__PWM3_OUT		0x79
+		>;
+	};
+
+	pinctrl_pwm8: pwm8-grp {
+		fsl,pins = <
+			MX6UL_PAD_CSI_HSYNC__PWM8_OUT		0x79
+		>;
+	};
+
+	pinctrl_gpio_buzzers: gpio-buzzers-grp {
+		fsl,pins = <
+			MX6UL_PAD_LCD_DATA01__GPIO3_IO06	0x70 /* SODIMM 70 - BZ1 */
+		>;
+	};
+
+	pinctrl_gpio_keys: gpio-keys-grp {
+		fsl,pins = <
+			MX6UL_PAD_LCD_DATA10__GPIO3_IO15	0xf070 /* SODIMM 74 - BTN1 */
+			MX6UL_PAD_LCD_DATA05__GPIO3_IO10	0xf070 /* SODIMM 72 - BTN2 */
+			MX6UL_PAD_UART4_RX_DATA__GPIO1_IO29	0xf070 /* SODIMM 194 - BTN3 */
+			MX6UL_PAD_UART4_TX_DATA__GPIO1_IO28	0xf070 /* SODIMM 196 - BTN4 */
+			MX6UL_PAD_LCD_DATA00__GPIO3_IO05	0xf070 /* SODIMM 76 - BTN5 */
+		>;
+	};
+};
+
+&pwm1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm1>;
+	#pwm-cells = <3>;
+};
+
+&pwm2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm2>;
+	#pwm-cells = <3>;
+};
+
+&pwm3 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm3>;
+	#pwm-cells = <3>;
+};
+
+&pwm4 {
+	status = "okay";
+};
+
+&pwm5 {
+	status = "okay";
+};
+
+&pwm6 {
+	status = "okay";
+};
+
+&pwm7 {
+	status = "okay";
+};
+
+&pwm8 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm8>;
+	#pwm-cells = <3>;
+};
+
+&usbotg2 {
+	status = "okay";
+};
