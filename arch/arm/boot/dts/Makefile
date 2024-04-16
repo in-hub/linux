@@ -590,6 +590,7 @@ dtb-$(CONFIG_SOC_IMX6UL) += \
 	imx6ull-inhub-hub-co100.dtb \
 	imx6ull-inhub-hub-io100.dtb \
 	imx6ull-inhub-hub-se100.dtb \
+	imx6ull-inhub-hub-si100.dtb \
 	imx6ulz-14x14-evk.dtb
 dtb-$(CONFIG_SOC_IMX7D) += \
 	imx7d-cl-som-imx7.dtb \
