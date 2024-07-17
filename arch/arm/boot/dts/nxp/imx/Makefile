@@ -333,6 +333,7 @@ dtb-$(CONFIG_SOC_IMX6UL) += \
 	imx6ull-dhcor-maveo-box.dtb \
 	imx6ull-inhub-hub-co100.dtb \
 	imx6ull-inhub-hub-se100.dtb \
+	imx6ull-inhub-hub-si100.dtb \
 	imx6ull-jozacp.dtb \
 	imx6ull-kontron-bl.dtb \
 	imx6ull-myir-mys-6ulx-eval.dtb \
