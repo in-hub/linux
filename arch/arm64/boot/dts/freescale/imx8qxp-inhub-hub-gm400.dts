@@ -1,0 +1,234 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+/*
+ * Copyright 2024 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx8qxp-colibri.dtsi"
+
+/ {
+	model = "in.hub HUB-GM400";
+	compatible = "inhub,hub-gm400", "fsl,imx8qxp";
+
+	leds {
+		compatible = "gpio-leds";
+
+		status_green {
+			label = "stgn";
+			gpios = <&lsio_gpio0 30 0x0>;
+			default-state = "off";
+		};
+
+		status_red {
+			label = "strd";
+			gpios = <&lsio_gpio3 3 0x0>;
+			default-state = "off";
+		};
+
+		backplane_green {
+			label = "bpgn";
+			gpios = <&lsio_gpio2 0 0x0>;
+			default-state = "off";
+		};
+
+		backplane_red {
+			label = "bprd";
+			gpios = <&lsio_gpio0 29 0x0>;
+			default-state = "off";
+		};
+
+		system_green {
+			label = "sygn";
+			gpios = <&lsio_gpio1 24 0x0>;
+			default-state = "on";
+		};
+
+		system_red {
+			label = "syrd";
+			gpios = <&lsio_gpio1 23 0x0>;
+			default-state = "off";
+			linux,default-trigger = "mmc0";
+		};
+	};
+
+	extcon_usbc_det: usbc_det {
+		compatible = "linux,extcon-usb-gpio";
+		debounce = <25>;
+		id-gpio = <&lsio_gpio5 9 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbc_det>;
+	};
+
+	reg_usb_host_vbus: regulator-usb-host-vbus {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbh1_reg>;
+		regulator-name = "usbh_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&lsio_gpio4 3 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+};
+
+&enet0_lpcg {
+	clocks = <&clk IMX_SC_R_ENET_0 IMX_SC_PM_CLK_PER>,
+		<&clk IMX_SC_R_ENET_0 IMX_SC_PM_CLK_PER>,
+		<&conn_axi_clk>,
+		<&clk IMX_SC_R_ENET_0 IMX_SC_C_DISABLE_50>,
+		<&conn_ipg_clk>,
+		<&conn_ipg_clk>;
+};
+
+&enet1_lpcg {
+	clocks = <&clk IMX_SC_R_ENET_1 IMX_SC_PM_CLK_PER>,
+		<&clk IMX_SC_R_ENET_1 IMX_SC_PM_CLK_PER>,
+		<&conn_axi_clk>,
+		<&clk IMX_SC_R_ENET_1 IMX_SC_C_DISABLE_50>,
+		<&conn_ipg_clk>,
+		<&conn_ipg_clk>;
+};
+
+&fec1 {
+	status = "okay";
+
+	mdio {
+		ethphy1: ethernet-phy@1 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			max-speed = <100>;
+			reg = <1>;
+		};
+	};
+};
+
+&fec2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_enet2>;
+	phy-mode = "rmii";
+	phy-handle = <&ethphy1>;
+	status = "okay";
+	phy-reset-gpios = <&lsio_gpio4 22 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <10>;
+
+};
+
+/*
+&flexcan2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flexcan2>;
+	status = "okay";
+};
+*/
+
+&i2c1 {
+	status = "okay";
+};
+
+&iomuxc {
+	pinctrl-0 = <&pinctrl_leds &pinctrl_reset>;
+
+	/delete-node/ lpuart3ctrlgrp;
+	/delete-node/ lpuart0grp;
+
+	pinctrl_leds: leds-grp {
+		fsl,pins = <
+			IMX8QXP_UART2_RX_LSIO_GPIO1_IO24			0x14 /* SODIMM 19 / LED1G */
+			IMX8QXP_UART2_TX_LSIO_GPIO1_IO23			0x14 /* SODIMM 21 / LED1R */
+			IMX8QXP_MIPI_DSI1_GPIO0_01_LSIO_GPIO2_IO00	0x14 /* SODIMM 23 / LED2G */
+			IMX8QXP_SAI1_RXD_LSIO_GPIO0_IO29			0x14 /* SODIMM 25 / LED2R */
+			IMX8QXP_SAI1_RXC_LSIO_GPIO0_IO30			0x14 /* SODIMM 27 / LED3G */
+			IMX8QXP_CSI_RESET_LSIO_GPIO3_IO03			0x14 /* SODIMM 29 / LED3R */
+		>;
+	};
+
+	pinctrl_reset: reset-grp {
+		fsl,pins = <
+			IMX8QXP_USDHC1_CD_B_LSIO_GPIO4_IO22			0x06000040 /* SODIMM 31 / ~RESET */
+		>;
+	};
+
+	pinctrl_bpb: bpb-grp {
+		fsl,pins = <
+			IMX8QXP_UART0_RX_ADMA_UART0_RX			0x06000020	/* SODIMM 36 / RXD2 */
+			IMX8QXP_UART0_TX_ADMA_UART0_TX			0x06000020	/* SODIMM 38 / TXD2 */
+			IMX8QXP_FLEXCAN0_RX_ADMA_UART0_RTS_B	0x06000020	/* SODIMM 34 / RTS2 */
+			IMX8QXP_USDHC1_DATA0_LSIO_GPIO4_IO25		0x34 /* SODIMM 192 / FLTBP */
+			IMX8QXP_MIPI_DSI0_GPIO0_01_LSIO_GPIO1_IO28	0x14 /* SODIMM 194 / ENBP */
+		>;
+	};
+
+	pinctrl_mb: mb-grp {
+		fsl,pins = <
+			IMX8QXP_UART1_RX_ADMA_UART1_RX			0x79		/* SODIMM 30 / RXD4 */
+			IMX8QXP_UART1_TX_ADMA_UART1_TX			0x79		/* SODIMM 28 / TXD4 */
+			IMX8QXP_UART1_RTS_B_ADMA_UART1_RTS_B	0x79		/* SODIMM 67 / RTS4 */
+			IMX8QXP_QSPI0A_DATA0_LSIO_GPIO3_IO09	0x34		/* SODIMM 43 / FLTMB */
+			IMX8QXP_QSPI0A_DATA1_LSIO_GPIO3_IO10	0x14		/* SODIMM 45 / ENMB */
+		>;
+	};
+
+	pinctrl_enet2: enet2grp {
+		fsl,pins = <
+			IMX8QXP_ESAI0_SCKR_CONN_ENET1_RGMII_TX_CTL	0x06000020 /* SODIMM 60 / TXEN */
+			IMX8QXP_SPDIF0_TX_CONN_ENET1_RGMII_RX_CTL	0x06000020 /* SODIMM 50 / RXDV */
+			IMX8QXP_SPDIF0_RX_CONN_ENET1_RGMII_RXD0		0x06000020 /* SODIMM 74 / RXD0 */
+			IMX8QXP_ESAI0_TX3_RX2_CONN_ENET1_RGMII_RXD1	0x06000020 /* SODIMM 46 / RXD1 */
+			IMX8QXP_ESAI0_TX4_RX1_CONN_ENET1_RGMII_TXD0	0x06000020 /* SODIMM 62 / TXD0 */
+			IMX8QXP_ESAI0_TX5_RX0_CONN_ENET1_RGMII_TXD1	0x06000020 /* SODIMM 48 / TXD1 */
+			IMX8QXP_ESAI0_TX2_RX3_CONN_ENET1_RMII_RX_ER	0x06000020 /* SODIMM 80 / RXER */
+			IMX8QXP_ESAI0_FSR_CONN_ENET1_RCLK50M_OUT	0x06000020/* SODIMM 76 / CLK */
+		>;
+	};
+
+	pinctrl_usbotg1: usbotg1grp {
+		fsl,pins = <
+				IMX8QXP_USB_SS3_TC0_CONN_USB_OTG1_PWR	0x00000021
+				IMX8QXP_USB_SS3_TC2_CONN_USB_OTG1_OC	0x04000021
+		>;
+	};
+};
+
+/* Colibri UART_A / UART1 */
+&lpuart3 {
+	status = "okay";
+	pinctrl-0 = <&pinctrl_lpuart3>;
+};
+
+/* Colibri UART_B / Backplane Bus */
+&lpuart0 {
+	status = "okay";
+	pinctrl-0 = <&pinctrl_bpb>;
+};
+
+/* Colibri UART_C / Modbus */
+&lpuart2 {
+	status = "okay";
+	pinctrl-0 = <&pinctrl_mb>;
+};
+
+&usbotg1 {
+	dr_mode = "peripheral";
+	extcon = <&extcon_usbc_det &extcon_usbc_det>;
+	disable-over-current;
+	status = "okay";
+};
+
+&usbphy1 {
+	status = "okay";
+};
+
+&usbotg3 {
+	dr_mode = "host";
+	vbus-supply = <&reg_usb_host_vbus>;
+	over-current-active-low;
+	status = "okay";
+};
+
+&usbotg3_cdns3 {
+	status = "okay";
+};
+
+&usb3_phy {
+	status = "okay";
+};
