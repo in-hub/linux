@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2022 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "am335x-inhub-hub-gm100.dts"
+
+/ {
+	model = "TURCK IM18-CCM60";
+	compatible = "ti,am335x-duoSol-I-xCom1", "turck,im18-ccm60", "ti,am33xx";
+	/delete-node/ leds;
+
+	st_tof {
+		compatible = "st,tof";
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led_blue_status: blue-status {
+			label = "blue:status";
+			gpios = <&gpio2 0x16 0x0>;
+			default-state = "off";
+			linux,default-trigger = "mmc0";
+		};
+
+		led_green_heartbeat: green-heartbeat {
+			label = "green:heartbeat";
+			gpios = <&gpio0 0xc 0x0>;
+			linux,default-trigger = "heartbeat";
+			default-state = "off";
+		};
+
+		led_red_disk: red-disk {
+			label = "red:disk";
+			gpios = <&gpio0 0x7 0x0>;
+			default-state = "off";
+		};
+
+		led_green_activity: green-activity {
+			label = "green:activity";
+			gpios = <&gpio2 0x18 0x0>;
+			default-state = "off";
+		};
+
+		led_red_activity: red-activity {
+			label = "red:activity";
+			gpios = <&gpio2 0x19 0x0>;
+			default-state = "off";
+		};
+
+		led_green_status: green-status {
+			label = "green:status";
+			gpios = <&gpio0 0x1a 0x0>;
+			default-state = "off";
+		};
+
+		led_red_status: red-status {
+			label = "red:status";
+			gpios = <&gpio0 0x1b 0x0>;
+			default-state = "off";
+		};
+
+		watchdog {
+			label = "watchdog";
+			gpios = <&gpio3 0x10 0x0>;
+			linux,default-trigger = "heartbeat";
+			default-state = "off";
+		};
+	};
+};
