@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2025 in.hub GmbH
+ */
+
+#include "imx6ull-inhub.dtsi"
+
+/ {
+	/delete-node/ usdhc2;
+
+};
+
+/delete-node/ &usdhc2;
