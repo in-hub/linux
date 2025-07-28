@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2022 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "am335x-inhub-hub-gm100.dts"
+
+/ {
+	model = "TURCK IM18-CCM60";
+	compatible = "ti,am335x-duoSol-I-xCom1", "turck,im18-ccm60", "ti,am33xx";
+	/delete-node/ leds;
+
+	aliases {
+		mmc0 = &mmc2;
+		mmc1 = &mmc1;
+	};
+
+	st_tof {
+		compatible = "st,tof";
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led_blue_status: blue-status {
+			label = "blue:status";
+			gpios = <&gpio2 0x16 0x0>;
+			default-state = "off";
+			linux,default-trigger = "mmc0";
+		};
+
+		led_green_heartbeat: green-heartbeat {
+			label = "green:heartbeat";
+			gpios = <&gpio0 0xc 0x0>;
+			linux,default-trigger = "timer";
+		};
+
+		led_red_disk: red-disk {
+			label = "red:disk";
+			gpios = <&gpio0 0x7 0x0>;
+			default-state = "off";
+		};
+
+		led_green_activity: green-activity {
+			label = "green:activity";
+			gpios = <&gpio2 0x18 0x0>;
+			default-state = "off";
+		};
+
+		led_red_activity: red-activity {
+			label = "red:activity";
+			gpios = <&gpio2 0x19 0x0>;
+			default-state = "off";
+		};
+
+		led_green_status: green-status {
+			label = "green:status";
+			gpios = <&gpio0 0x1a 0x0>;
+			default-state = "off";
+		};
+
+		led_red_status: red-status {
+			label = "red:status";
+			gpios = <&gpio0 0x1b 0x0>;
+			default-state = "off";
+		};
+
+		watchdog {
+			label = "watchdog";
+			gpios = <&gpio3 0x10 0x0>;
+			linux,default-trigger = "heartbeat";
+			default-state = "off";
+		};
+	};
+};
+
+&am33xx_pinmux {
+	sd_pins: pinmux_sd_card {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_MMC0_CLK, PIN_INPUT, MUX_MODE0)
+			AM33XX_PADCONF(AM335X_PIN_MMC0_CMD, PIN_INPUT, MUX_MODE0)
+			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT0, PIN_INPUT, MUX_MODE0)
+			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT1, PIN_INPUT, MUX_MODE0)
+			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT2, PIN_INPUT, MUX_MODE0)
+			AM33XX_PADCONF(AM335X_PIN_MMC0_DAT3, PIN_INPUT, MUX_MODE0)
+			AM33XX_PADCONF(AM335X_PIN_MCASP0_ACLKX, PIN_INPUT, MUX_MODE7)	/* mcasp0_aclkx.gpio3_14 */
+			AM33XX_PADCONF(AM335X_PIN_MCASP0_ACLKR, PIN_INPUT, MUX_MODE7)	/* mcasp0_aclkx.gpio3_18 */
+			AM33XX_PADCONF(AM335X_PIN_RMII1_REF_CLK, PIN_INPUT, MUX_MODE7)	/* rmii2_refclk.gpio0_29 */
+		>;
+	};
+};
+
+&mmc1 {
+	status = "okay";
+	bus-width = <4>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sd_pins>;
+	vmmc-supply = <&vmmcsd_fixed>;
+	cd-gpios = <&gpio3 14 GPIO_ACTIVE_HIGH>;
+	wp-gpios = <&gpio3 18 GPIO_ACTIVE_HIGH>;
+};
