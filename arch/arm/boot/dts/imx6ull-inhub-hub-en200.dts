@@ -1,0 +1,115 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2025 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6ull-inhub-emmc.dtsi"
+#include "imx6ull-inhub-lan8831.dtsi"
+
+/ {
+	model = "in.hub HUB-EN200";
+	compatible = "inhub,hub-en200", "fsl,imx6ull";
+
+	aliases {
+		mmc0 = &usdhc2;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_leds>;
+
+		led_green_status: green-status {
+			label = "green:status";
+			gpios = <&gpio3 14 0x0>;
+			default-state = "off";
+		};
+
+		led_red_status: red-status {
+			label = "red:status";
+			gpios = <&gpio3 13 0x0>;
+			default-state = "off";
+		};
+
+		led_green_activity: green-activity {
+			label = "green:activity";
+			gpios = <&gpio3 18 0x0>;
+			default-state = "off";
+		};
+
+		led_red_activity: red-activity {
+			label = "red:activity";
+			gpios = <&gpio3 17 0x0>;
+			default-state = "off";
+		};
+
+		led_green_heartbeat: green-heartbeat {
+			label = "green:heartbeat";
+			gpios = <&gpio3 16 0x0>;
+			linux,default-trigger = "timer";
+		};
+
+		led_red_disk: red-disk {
+			label = "red:disk";
+			gpios = <&gpio3 15 0x0>;
+			default-state = "off";
+			linux,default-trigger = "mmc0";
+		};
+	};
+
+};
+
+/delete-node/ &adc1;
+
+&iomuxc {
+	pinctrl-0 = <&pinctrl_gpio2 &pinctrl_gpio3 &pinctrl_gpio4 &pinctrl_gpio5 &pinctrl_gpio6 &pinctrl_usb2_ctrl>;
+
+	/delete-node/ adc1grp;
+	/delete-node/ usdhc2-grp;
+	/delete-node/ uart5-grp;
+
+	pinctrl_uart5: uart5grp {
+		fsl,pins = <
+			MX6UL_PAD_GPIO1_IO04__UART5_DTE_RX	0x1b0b1 /* SODIMM 19 */
+			MX6UL_PAD_GPIO1_IO05__UART5_DTE_TX	0x1b0b1 /* SODIMM 21 */
+			MX6UL_PAD_GPIO1_IO08__UART5_DTE_CTS	0x1b0b1 /* SODIMM 4 */
+		>;
+	};
+
+	pinctrl_usb2_ctrl: usb2ctrlgrp {
+		fsl,pins = <
+			MX6UL_PAD_GPIO1_IO03__GPIO1_IO03 0x000050B0 /* SODIMM 89 */
+		>;
+	};
+
+	pinctrl_leds: ledsgrp {
+		fsl,pins = <
+			MX6UL_PAD_LCD_DATA11__GPIO3_IO16	0x74 /* LED1G */
+			MX6UL_PAD_LCD_DATA10__GPIO3_IO15	0x74 /* LED1R */
+			MX6UL_PAD_LCD_DATA13__GPIO3_IO18	0x74 /* LED2G */
+			MX6UL_PAD_LCD_DATA12__GPIO3_IO17	0x74 /* LED2R */
+			MX6UL_PAD_LCD_DATA09__GPIO3_IO14	0x74 /* LED3G */
+			MX6UL_PAD_LCD_DATA08__GPIO3_IO13	0x74 /* LED3R */
+		>;
+	};
+};
+
+&ecspi1 {
+	status = "okay";
+
+	spidev0: spi@0 {
+		compatible = "spidev";
+		reg = <0>;
+		spi-max-frequency = <5000000>;
+	};
+};
+
+&uart5 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart5>;
+	linux,rs485-enabled-at-boot-time;
+	uart-has-rtscts;
+	status = "okay";
+};
