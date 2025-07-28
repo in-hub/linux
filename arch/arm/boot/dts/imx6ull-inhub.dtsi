@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2025 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6ull-colibri-nonwifi.dtsi"
+
+/ {
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	/delete-node/ mmc0;
+	/delete-node/ backlight;
+
+	aliases {
+		/delete-property/ mmc0;
+		/delete-property/ mmc1;
+		/delete-property/ i2c1;
+	};
+
+	/delete-node/ regulator-sd1-vqmmc;
+
+	extcon_usbc_det: usbc_det {
+		compatible = "linux,extcon-usb-gpio";
+		debounce = <25>;
+		id-gpio = <&gpio5 2 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_snvs_usbc_det>;
+	};
+
+	reg_5v0: regulator-5v0 {
+		compatible = "regulator-fixed";
+		regulator-name = "5V";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
+
+	reg_usbh_vbus: regulator-usbh-vbus {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbh_reg>;
+		regulator-name = "usbh_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio1 2 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		vin-supply = <&reg_5v0>;
+	};
+
+};
+
+&i2c2 {
+	status = "disabled";
+	pinctrl-0 = <>;
+	pinctrl-1 = <>;
+	/delete-node/ ad7879@2c;
+};
+
+/delete-node/ &lcdif;
+/delete-node/ &usdhc1;
+
+&fec1 {
+	status = "disabled";
+};
+
+&iomuxc {
+	/delete-node/ gpio-bl-on;
+	/delete-node/ i2c2-grp;
+	/delete-node/ i2c2-gpio-grp;
+	/delete-node/ lcdif-ctrl-grp;
+	/delete-node/ lcdif-dat-grp;
+	/delete-node/ uart1-grp;
+	/delete-node/ uart1-ctrl1-grp;
+	/delete-node/ usdhc1-grp;
+	/delete-node/ usdhc1-100mhz-grp;
+	/delete-node/ usdhc1-200mhz-grp;
+	/delete-node/ usdhc2-grp;
+	/delete-node/ usdhc2-100mhz-grp;
+	/delete-node/ usdhc2-200mhz-grp;
+
+	pinctrl_uart1_nortscts: uart1grp {
+		fsl,pins = <
+			MX6UL_PAD_UART1_TX_DATA__UART1_DTE_RX	0x1b0b1
+			MX6UL_PAD_UART1_RX_DATA__UART1_DTE_TX	0x1b0b1
+		>;
+	};
+};
+
+&iomuxc_snvs {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_snvs_gpio1 &pinctrl_snvs_gpio2 &pinctrl_snvs_gpio3>;
+
+	/delete-node/ snvs-ad7879-int-grp;
+	/delete-node/ snvs-gpiokeys-grp;
+	/delete-node/ snvs-reg-sd-grp;
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+&uart1 {
+	status = "okay";
+	pinctrl-0 = <&pinctrl_uart1_nortscts>;
+	/delete-property/ uart-has-rtscts;
+};
+
+&usbotg1 {
+	status = "okay";
+	dr_mode = "peripheral";
+	extcon = <&extcon_usbc_det &extcon_usbc_det>;
+	disable-over-current;
+};
+
+&usbotg2 {
+	status = "okay";
+	dr_mode = "host";
+	vbus-supply = <&reg_usbh_vbus>;
+	over-current-active-low;
+};
+
+&wdog1 {
+	status = "okay";
+};
