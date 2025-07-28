@@ -1,0 +1,176 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2025 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6ull-inhub-emmc.dtsi"
+#include "imx6ull-inhub-lan8831.dtsi"
+#include "imx6ull-inhub-hub-io.dtsi"
+
+/ {
+	model = "in.hub HUB-IO200 Board";
+	compatible = "inhub,hub-io200", "fsl,imx6ull";
+};
+
+&iomuxc {
+	pinctrl-0 = <&pinctrl_gpio3 &pinctrl_gpio_dac &pinctrl_gpio_io1 &pinctrl_gpio_io2 &pinctrl_gpio_io3 &pinctrl_gpio_io4 &pinctrl_gpio_io5 &pinctrl_gpio_io6 &pinctrl_gpio_di &pinctrl_bp_ctrl>;
+
+	pinctrl_gpio_dac: dacgrp {
+		fsl,pins = <
+			MX6UL_PAD_CSI_VSYNC__GPIO4_IO19		0xf0b0 /* SODIMM 194 – FLTC1 */
+			MX6UL_PAD_CSI_HSYNC__GPIO4_IO20		0xf0b0 /* SODIMM 196 – FLTC2 */
+		>;
+	};
+
+	pinctrl_gpio_io1: io1grp {
+		fsl,pins = <
+			MX6UL_PAD_CSI_DATA00__GPIO4_IO21	0x1030 /* SODIMM 101 - ACUREN1 */
+			MX6UL_PAD_SD1_CMD__GPIO2_IO16		0xf0b0 /* SODIMM 190 – AFLT1 */
+			MX6UL_PAD_CSI_PIXCLK__GPIO4_IO18	0xf0b0 /* SODIMM 96 – FLT1 */
+			MX6UL_PAD_CSI_DATA05__GPIO4_IO26	0xf0b0 /* SODIMM 98 – DIN1 / DOI_LVL */
+			MX6UL_PAD_SNVS_TAMPER7__GPIO5_IO07	0x1030 /* SODIMM 100 – PDEN1 / DI_EN */
+			MX6UL_PAD_JTAG_TRST_B__GPIO1_IO15	0x1030 /* SODIMM 102 – DOUT1 / IN */
+			MX6UL_PAD_ENET1_RX_ER__GPIO2_IO07	0x1030 /* SODIMM 104 – DOEN1 / PP */
+		>;
+	};
+
+	pinctrl_gpio_io2: io2grp {
+		fsl,pins = <
+			MX6UL_PAD_NAND_CE0_B__GPIO4_IO13	0x1030 /* SODIMM 135 – ACUREN2 */
+			MX6UL_PAD_ENET1_TX_DATA0__GPIO2_IO03 0xf0b0 /* SODIMM 188 – AFLT2 */
+			MX6UL_PAD_LCD_DATA00__GPIO3_IO05	0xf0b0 /* SODIMM 76 – FLT2 */
+			MX6UL_PAD_LCD_VSYNC__GPIO3_IO03		0xf0b0 /* SODIMM 82 – DIN2 / DOI_LVL */
+			MX6UL_PAD_CSI_DATA03__GPIO4_IO24	0x1030 /* SODIMM 97 – DOUT2 / IN */
+			MX6UL_PAD_JTAG_TCK__GPIO1_IO14		0x1030 /* SODIMM 99 – DOEN2 / PP */
+		>;
+	};
+};
+
+&gpio1 {
+	gpio-line-names = "",
+			  "",
+			  "",
+			  "",
+			  "LED_STGN",
+			  "LED_STRD",
+			  "UNUSABLE_",
+			  "UNUSABLE_",
+			  "",
+			  "",
+			  "IO4_ACUREN",
+			  "",
+			  "LED_BPGN",
+			  "",
+			  "IO2_DOEN",
+			  "IO1_DOUT",
+			  "",
+			  "",
+			  "LED_BPRD",
+			  "LED_SYGN",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "BP_MODULE_DETECTION",
+			  "";
+};
+
+&gpio2 {
+	gpio-line-names = "DI5",
+			  "DI2",
+			  "IO3_DOEN",
+			  "IO2_AFLT",
+			  "",
+			  "",
+			  "DI4",
+			  "IO1_DOEN",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "IO1_AFLT",
+			  "",
+			  "BP_SUPPLY_ENABLE";
+};
+
+&gpio3 {
+	gpio-line-names = "IO5_DIN",
+			  "IO6_FLT",
+			  "IO4_DIEN",
+			  "IO2_DIN",
+			  "",
+			  "IO2_FLT",
+			  "IO4_DOUT",
+			  "IO5_DOUT",
+			  "IO5_DIEN",
+			  "IO3_AFLT",
+			  "IO4_DOEN",
+			  "IO4_AFLT",
+			  "IO6_DIN",
+			  "IO5_DOEN",
+			  "IO6_DIEN",
+			  "IO3_ACUREN",
+			  "IO6_DOUT",
+			  "IO6_DOEN",
+			  "IO5_FLT",
+			  "IO4_DIN",
+			  "IO4_FLT",
+			  "",
+			  "DI1",
+			  "LED_SYRD";
+};
+
+&gpio4 {
+	gpio-line-names = "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "IO2_ACUREN",
+			  "IO3_DOUT",
+			  "",
+			  "",
+			  "",
+			  "IO1_FLT",
+			  "FLTC1",
+			  "FLTC2",
+			  "IO1_ACUREN",
+			  "IO3_FLT",
+			  "",
+			  "IO2_DOUT",
+			  "",
+			  "IO1_DIN";
+};
+
+&gpio5 {
+	gpio-line-names = "DI6",
+			  "DI3",
+			  "",
+			  "",
+			  "IO3_DIEN",
+			  "",
+			  "IO3_DIN",
+			  "IO1_DIEN",
+			  "IO2_DIEN";
+};
+
+&led_red_disk {
+	linux,default-trigger = "mmc0";
+};
