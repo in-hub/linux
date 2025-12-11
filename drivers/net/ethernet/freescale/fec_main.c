@@ -4612,6 +4612,21 @@ fec_probe(struct platform_device *pdev)
 
 	ndev->max_mtu = fep->max_buf_size - VLAN_ETH_HLEN - ETH_FCS_LEN;
 
+	if (pdev->dev.of_node) {
+		int idx;
+
+		idx = of_alias_get_id(pdev->dev.of_node, "ethernet");
+		if (idx >= 0) {
+			char newname[IFNAMSIZ];
+			snprintf(newname, sizeof(newname), "eth%d", idx);
+			if (!dev_set_name(&ndev->dev, newname))
+				dev_info(&pdev->dev, "assigned name %s from DT alias\n", newname);
+			else
+				dev_warn(&pdev->dev, "failed to set name %s from DT alias\n", newname);
+			strncpy(ndev->name, newname, IFNAMSIZ);
+		}
+	}
+
 	ret = register_netdev(ndev);
 	if (ret)
 		goto failed_register;
