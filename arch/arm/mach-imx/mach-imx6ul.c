@@ -5,10 +5,29 @@
 #include <linux/irqchip.h>
 #include <linux/of_platform.h>
 #include <asm/mach/arch.h>
+#include <linux/mfd/syscon.h>
+#include <linux/mfd/syscon/imx6q-iomuxc-gpr.h>
+#include <linux/phy.h>
+#include <linux/regmap.h>
 
 #include "common.h"
 #include "cpuidle.h"
 #include "hardware.h"
+
+static int lan8831_phy_fixup(struct phy_device *dev)
+{
+	struct regmap *gpr;
+
+	gpr = syscon_regmap_lookup_by_compatible("fsl,imx6ul-iomuxc-gpr");
+	if (!IS_ERR(gpr))
+		regmap_update_bits(gpr, IOMUXC_GPR1, 3 << 13, 3 << 13);
+	else
+		pr_err("failed to find fsl,imx6ul-iomux-gpr regmap\n");
+
+	return 0;
+}
+
+#define PHY_ID_LAN8831 0x221652
 
 static void __init imx6ul_init_machine(void)
 {
@@ -18,6 +37,7 @@ static void __init imx6ul_init_machine(void)
 	of_platform_default_populate(NULL, NULL, NULL);
 	imx_anatop_init();
 	imx6ul_pm_init();
+	phy_register_fixup_for_uid(PHY_ID_LAN8831, 0xffffffff, lan8831_phy_fixup);
 }
 
 static void __init imx6ul_init_irq(void)
