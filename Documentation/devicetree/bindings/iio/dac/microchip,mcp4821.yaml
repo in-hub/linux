@@ -46,6 +46,10 @@ properties:
 
   vdd-supply: true
 
+  gain-1x:
+    type: boolean
+    description: Set to use output gain of 1x instead of 2x (default)
+
   ldac-gpios:
     description: |
       Active Low LDAC (Latch DAC Input) pin used to update the DAC output.
@@ -80,6 +84,7 @@ examples:
             vdd-supply = <&vdd_regulator>;
             ldac-gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
             powerdown-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+            gain-1x;
             spi-cpha;
             spi-cpol;
         };

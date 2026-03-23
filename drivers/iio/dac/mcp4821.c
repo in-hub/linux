@@ -12,13 +12,13 @@
  *	MCP48x2: https://ww1.microchip.com/downloads/en/DeviceDoc/20002249B.pdf
  *
  * TODO:
- *	- Configurable gain
  *	- Regulator control
  */
 
 #include <linux/module.h>
 #include <linux/mod_devicetable.h>
 #include <linux/spi/spi.h>
+#include <linux/of.h>
 
 #include <linux/iio/iio.h>
 #include <linux/iio/types.h>
@@ -26,6 +26,7 @@
 #include <linux/unaligned.h>
 
 #define MCP4821_ACTIVE_MODE BIT(12)
+#define MCP4821_GAIN_1X     BIT(13)
 #define MCP4802_SECOND_CHAN BIT(15)
 
 /* DAC uses an internal Voltage reference of 4.096V at a gain of 2x */
@@ -43,6 +44,7 @@ enum mcp4821_supported_drvice_ids {
 struct mcp4821_state {
 	struct spi_device *spi;
 	u16 dac_value[2];
+	bool gain_1x;
 };
 
 struct mcp4821_chip_info {
@@ -150,6 +152,8 @@ static int mcp4821_write_raw(struct iio_dev *indio_dev,
 		return -EINVAL;
 
 	write_val = MCP4821_ACTIVE_MODE | val << chan->scan_type.shift;
+	if (state->gain_1x)
+		write_val |= MCP4821_GAIN_1X;
 	if (chan->channel)
 		write_val |= MCP4802_SECOND_CHAN;
 
@@ -182,6 +186,7 @@ static int mcp4821_probe(struct spi_device *spi)
 
 	state = iio_priv(indio_dev);
 	state->spi = spi;
+	state->gain_1x = of_property_read_bool(spi->dev.of_node, "gain-1x");
 
 	info = spi_get_device_match_data(spi);
 	indio_dev->name = info->name;
