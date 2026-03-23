@@ -361,6 +361,8 @@ dtb-$(CONFIG_SOC_IMX6UL) += \
 	imx6ull-engicam-microgea-rmm.dtb \
 	imx6ull-inhub-hub-en200.dtb \
 	imx6ull-inhub-hub-en2xx.dtb \
+	imx6ull-inhub-hub-io100.dtb \
+	imx6ull-inhub-hub-io200.dtb \
 	imx6ull-jozacp.dtb \
 	imx6ull-kontron-bl.dtb \
 	imx6ull-myir-mys-6ulx-eval.dtb \
