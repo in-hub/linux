@@ -333,6 +333,7 @@ dtb-$(CONFIG_ARCH_MXC) += imx8qxp-colibri-iris.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8qxp-colibri-iris-v2.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8qxp-inhub-hub-cx400.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8qxp-inhub-hub-gm400.dtb
+dtb-$(CONFIG_ARCH_MXC) += imx8qxp-inhub-hub-se400.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8qxp-mek.dtb
 
 imx8qxp-mek-pcie-ep-dtbs += imx8qxp-mek.dtb imx-pcie0-ep.dtbo

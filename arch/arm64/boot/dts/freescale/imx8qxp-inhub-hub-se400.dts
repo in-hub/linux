@@ -1,0 +1,118 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2026 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx8qxp-colibri-inhub.dtsi"
+
+/ {
+	model = "in.hub HUB-SE400";
+	compatible = "inhub,hub-se400", "fsl,imx8qxp";
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_leds>;
+
+		led_green_activity: green-activity {
+			label = "green:activity";
+			gpios = <&lsio_gpio1 21 0x0>;
+			default-state = "off";
+		};
+
+		led_red_status: red-status {
+			label = "red:status";
+			gpios = <&lsio_gpio1 22 0x0>;
+			default-state = "off";
+		};
+
+		led_green_heartbeat: green-heartbeat {
+			label = "green:heartbeat";
+			gpios = <&lsio_gpio1 29 0x0>;
+			linux,default-trigger = "timer";
+		};
+	};
+
+	reg_din: regulator-din {
+		compatible = "regulator-fixed";
+		regulator-name = "digital-in";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_din>;
+	};
+
+};
+
+&iomuxc {
+	pinctrl_leds: ledsgrp {
+		fsl,pins = <
+			IMX8QXP_MIPI_DSI1_I2C0_SCL_LSIO_GPIO1_IO29	0x00000040 /* SODIMM 186 - led_green_heartbeat */
+			IMX8QXP_UART0_RX_LSIO_GPIO1_IO21			0x00000040	/* SODIMM 36 / led_green_activity */
+			IMX8QXP_UART0_TX_LSIO_GPIO1_IO22			0x00000040 /* SODIMM 38 - led_red_status */
+		>;
+	};
+
+	pinctrl_gpio_din: dingrp {
+		fsl,pins = <
+			IMX8QXP_FLEXCAN0_RX_LSIO_GPIO1_IO15		0x20	/* SODIMM 34 - DIN */
+		>;
+	};
+};
+
+&adc0 {
+	status = "okay";
+};
+
+&fec1 {
+	status = "disabled";
+};
+
+&fec2 {
+	status = "disabled";
+};
+
+&lsio_gpio1 {
+	gpio-line-names = "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "DIN",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "LED_GREEN_ACTIVITY",
+			  "LED_RED_STATUS",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "LED_GREEN_HEARTBEAT";
+};
+
+&i2c1 {
+	status = "okay";
+
+	sht3x_i2c: sht@44 {
+		compatible = "sht3x";
+		reg = <0x44>;
+	};
+};
