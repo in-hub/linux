@@ -1,0 +1,212 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2026 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx8qxp-colibri.dtsi"
+
+/delete-node/ &adma_pwm;
+/delete-node/ &adma_pwm_lpcg;
+/delete-node/ &amix;
+/delete-node/ &gpu0_subsys;
+/delete-node/ &lpspi0;
+/delete-node/ &lpspi1;
+/delete-node/ &lpspi2;
+/delete-node/ &lpspi3;
+/delete-node/ &lsio_pwm0;
+/delete-node/ &lsio_pwm1;
+/delete-node/ &lsio_pwm2;
+/delete-node/ &esai0;
+/delete-node/ &sai0;
+/delete-node/ &sai1;
+/delete-node/ &sai2;
+/delete-node/ &sai3;
+/delete-node/ &spdif0;
+/delete-node/ &security_subsys;
+
+
+/ {
+	/delete-node/ gpio-keys;
+	/delete-node/ sound-card;
+	/delete-node/ regulator-module-wifi;
+	/delete-node/ vpu@2c000000;
+	/delete-node/ vpu-core0;
+	/delete-node/ vpu-core1;
+
+	aliases {
+		/delete-property/ mmc1;
+		/delete-property/ spi0;
+		/delete-property/ spi1;
+		/delete-property/ spi2;
+		/delete-property/ spi3;
+		/delete-property/ vpu-core0;
+		/delete-property/ vpu-core1;
+	};
+
+	reserved-memory {
+		/delete-node/ decoder-boot@84000000;
+		/delete-node/ encoder-boot@86000000;
+		/delete-node/ decoder-rpc@92000000;
+		/delete-node/ encoder-rpc@94400000;
+		/delete-node/ dsp@92400000;
+	};
+};
+
+&conn_subsys {
+	/delete-node/ mmc@5b020000;
+};
+
+&extcon_usbc_det {
+	status = "okay";
+};
+
+&iomuxc {
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+
+	/delete-node/ ad7879intgrp;
+	/delete-node/ atmeladaptergrp;
+	/delete-node/ atmelconnectorgrp;
+	/delete-node/ extio0grp;
+	/delete-node/ flexcan0grp;
+	/delete-node/ flexcan2grp;
+	/delete-node/ gpioblongrp;
+	/delete-node/ gpiohpdgrp;
+	/delete-node/ gpiokeysgrp;
+	/delete-node/ hog0grp;
+	/delete-node/ hog1grp;
+	/delete-node/ hog2grp;
+	/delete-node/ hogscfwgrp;
+	/delete-node/ i2c0mipilvds0grp;
+	/delete-node/ i2c0mipilvds1grp;
+	/delete-node/ lcdifgrp;
+	/delete-node/ lpuart0grp;
+	/delete-node/ lpuart2grp;
+	/delete-node/ lpuart3ctrlgrp;
+	/delete-node/ lpspi2grp;
+	/delete-node/ lpspi2cs2grp;
+	/delete-node/ pwmagrp;
+	/delete-node/ pwmbgrp;
+	/delete-node/ pwmcgrp;
+	/delete-node/ pwmdgrp;
+	/delete-node/ pciebgrp;
+	/delete-node/ sai0grp;
+	/delete-node/ sgtl5000grp;
+	/delete-node/ sgtl5000usbclkgrp;
+	/delete-node/ usb3503agrp;
+	/delete-node/ usdhc2grp;
+	/delete-node/ usdhc2gpioslpgrp;
+	/delete-node/ usdhc2gpiogrp;
+	/delete-node/ usdhc2-100mhzgrp;
+	/delete-node/ usdhc2-200mhzgrp;
+	/delete-node/ usdhc2slpgrp;
+	/delete-node/ wifigrp;
+};
+
+&lsio_gpio0 {
+	gpio-line-names = <>;
+};
+
+&lsio_gpio1 {
+	gpio-line-names = <>;
+};
+
+&lsio_gpio2 {
+	gpio-line-names = <>;
+};
+
+&lsio_gpio3 {
+	gpio-line-names = <>;
+};
+
+&lsio_gpio4 {
+	gpio-line-names = "",
+			  "",
+			  "",
+			  "USBH_VBUS";
+};
+
+&lsio_gpio5 {
+	gpio-line-names = "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "USBO_CABLE_DET";
+};
+
+&hsio_phy {
+	/delete-property/ enable-gpios;
+	status = "disabled";
+};
+
+&hsio_refb_clk {
+	/delete-property/ enable-gpios;
+	status = "disabled";
+};
+
+&i2c0 {
+	pinctrl-0 = <&pinctrl_i2c0>;
+
+	/delete-node/ usb-hub@8;
+	/delete-node/ audio-codec@a;
+	/delete-node/ touchscreen@2c;
+	/delete-node/ gpio@43;
+};
+
+&jpegdec {
+	status = "disabled";
+};
+
+&jpegenc {
+	status = "disabled";
+};
+
+&lpuart0 {
+	/delete-property/ pinctrl-0;
+};
+
+&lpuart2 {
+	/delete-property/ pinctrl-0;
+};
+
+&lpuart3 {
+	pinctrl-0 = <&pinctrl_lpuart3>;
+	status = "okay";
+};
+
+&pcieb {
+	/delete-property/ pinctrl-0;
+	/delete-property/ phys;
+	/delete-property/ reset-gpios;
+	status = "disabled";
+};
+
+&usbotg1 {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&usbphy1 {
+	status = "okay";
+};
+
+&usbotg3 {
+	dr_mode = "host";
+	over-current-active-low;
+	status = "okay";
+};
+
+&usbotg3_cdns3 {
+	status = "okay";
+};
+
+&usb3_phy {
+	status = "okay";
+};
