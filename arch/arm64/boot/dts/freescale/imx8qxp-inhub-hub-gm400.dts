@@ -1,0 +1,288 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2026 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx8qxp-colibri-inhub-base.dtsi"
+
+/ {
+	model = "in.hub HUB-GM400";
+	compatible = "inhub,hub-gm400", "fsl,imx8qxp";
+
+	reg_adio: regulator-adio {
+		compatible = "regulator-fixed";
+		regulator-name = "analog-digital-io";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_io1 &pinctrl_gpio_io2 &pinctrl_gpio_io3 &pinctrl_gpio_io4 &pinctrl_gpio_io5 &pinctrl_gpio_io6>;
+	};
+};
+
+&iomuxc {
+	pinctrl_backplanebus: bpbgrp {
+		fsl,pins = <
+			IMX8QXP_UART0_RX_ADMA_UART0_RX			0x06000020	/* SODIMM 36 / RXD2 */
+			IMX8QXP_UART0_TX_ADMA_UART0_TX			0x06000020	/* SODIMM 38 / TXD2 */
+			IMX8QXP_FLEXCAN0_RX_ADMA_UART0_RTS_B	0x06000020	/* SODIMM 34 / RTS2 */
+			IMX8QXP_MIPI_DSI0_GPIO0_01_LSIO_GPIO1_IO28	0x40 /* SODIMM 194 / BP_SUPPLY_ENABLE */
+			IMX8QXP_USDHC1_DATA0_LSIO_GPIO4_IO25		0x20 /* SODIMM 192 / BP_SUPPLY_STATUS */
+		>;
+	};
+
+	pinctrl_rs485: rs485grp {
+		fsl,pins = <
+			IMX8QXP_UART1_RX_ADMA_UART1_RX			0x06000020		/* SODIMM 30 / RXD4 */
+			IMX8QXP_UART1_TX_ADMA_UART1_TX			0x06000020		/* SODIMM 28 / TXD4 */
+			IMX8QXP_UART1_RTS_B_ADMA_UART1_RTS_B	0x06000020		/* SODIMM 67 / RTS4 */
+			IMX8QXP_CSI_D04_CI_PI_D06               0x61			/* SODIMM 67 / reserve unused CSI_D04 */
+			IMX8QXP_QSPI0A_DATA1_LSIO_GPIO3_IO10	0x40		/* SODIMM 45 / RS485_SUPPLY_ENABLE */
+			IMX8QXP_QSPI0A_DATA0_LSIO_GPIO3_IO09	0x20		/* SODIMM 43 / RS485_SUPPLY_STATUS */
+		>;
+	};
+
+	pinctrl_can_supply: cansupplygrp {
+		fsl,pins = <
+			IMX8QXP_UART1_CTS_B_LSIO_GPIO0_IO24		0x40	/* SODIMM 61 - CAN_SUPPLY_ENABLE */
+			IMX8QXP_USDHC1_DATA2_LSIO_GPIO4_IO27	0x20	/* SODIMM 51 - CAN_SUPPLY_STATUS */
+		>;
+	};
+
+	pinctrl_gpio_io1: io1grp {
+		fsl,pins = <
+			IMX8QXP_ESAI0_FST_LSIO_GPIO0_IO01	0x00000020	/* SODIMM 70 - FLT1 */
+			IMX8QXP_ESAI0_TX1_LSIO_GPIO0_IO05	0x00000020	/* SODIMM 72 - DIN1 / DOI_LVL */
+			IMX8QXP_ESAI0_TX0_LSIO_GPIO0_IO04	0x00000040	/* SODIMM 78 - PDEN1 / DI_EN */
+			IMX8QXP_MCLK_IN0_LSIO_GPIO0_IO19	0x00000040	/* SODIMM 82 - DOUT1 / IN */
+			IMX8QXP_SPI2_CS0_LSIO_GPIO1_IO00	0x00000040	/* SODIMM 86 - ACUREN1 / ACUREN */
+			IMX8QXP_SPI2_SDI_LSIO_GPIO1_IO02	0x00000020	/* SODIMM 90 - AFLT1 */
+		>;
+	};
+
+	pinctrl_gpio_io2: io2grp {
+		fsl,pins = <
+			IMX8QXP_SPI2_SDO_LSIO_GPIO1_IO01			0x00000020 /* SODIMM 92  - FLT2 */
+			IMX8QXP_CSI_PCLK_LSIO_GPIO3_IO00			0x00000020 /* SODIMM 96  - DIN2 / DOI_LVL */
+			IMX8QXP_QSPI0B_DATA3_LSIO_GPIO3_IO21		0x00000040 /* SODIMM 98  - PDEN2 / DI_EN */
+			IMX8QXP_SAI1_RXFS_LSIO_GPIO0_IO31			0x00000040 /* SODIMM 100 - DOUT2 / IN */
+			IMX8QXP_QSPI0B_DQS_LSIO_GPIO3_IO22			0x00000040 /* SODIMM 102 - ACUREN2 / ACUREN */
+			IMX8QXP_SPI2_SCK_LSIO_GPIO1_IO03			0x00000020 /* SODIMM 88  - AFLT2 */
+		>;
+	};
+
+	pinctrl_gpio_io3: io3grp {
+		fsl,pins = <
+			IMX8QXP_QSPI0B_SS0_B_LSIO_GPIO3_IO23		0x00000020 /* SODIMM 104 - FLT3 */
+			IMX8QXP_QSPI0B_SS1_B_LSIO_GPIO3_IO24		0x00000020 /* SODIMM 106 - DIN3 / DOI_LVL */
+			IMX8QXP_MIPI_DSI1_GPIO0_00_LSIO_GPIO1_IO31	0x00000040 /* SODIMM 138 - PDEN3 / DI_EN */
+			IMX8QXP_QSPI0B_DATA0_LSIO_GPIO3_IO18		0x00000040 /* SODIMM 99  - DOUT3 / IN */
+			IMX8QXP_SAI0_TXD_LSIO_GPIO0_IO25			0x00000040 /* SODIMM 103 - ACUREN3 / ACUREN */
+			IMX8QXP_CSI_D01_CI_PI_D03					0x00000061 /* SODIMM 103 - reserve unused CSI_D01 */
+			IMX8QXP_USDHC1_CMD_LSIO_GPIO4_IO24			0x00000020 /* SODIMM 190 - AFLT3 */
+		>;
+	};
+
+	pinctrl_gpio_io4: io4grp {
+		fsl,pins = <
+			IMX8QXP_QSPI0B_DATA1_LSIO_GPIO3_IO19		0x00000020 /* SODIMM 105 - FLT4 */
+			IMX8QXP_QSPI0B_DATA2_LSIO_GPIO3_IO20		0x00000020 /* SODIMM 107 - DIN4 / DOI_LVL */
+			IMX8QXP_USB_SS3_TC1_LSIO_GPIO4_IO04			0x00000040 /* SODIMM 133 - PDEN4 / DI_EN */
+			IMX8QXP_ENET0_RGMII_RXD3_LSIO_GPIO5_IO08	0x00000040 /* SODIMM 135 - DOUT4 / IN */
+			IMX8QXP_MIPI_DSI1_I2C0_SCL_LSIO_GPIO1_IO29	0x00000040 /* SODIMM 186 - ACUREN4 / ACUREN */
+			IMX8QXP_MIPI_DSI1_I2C0_SDA_LSIO_GPIO1_IO30	0x00000020 /* SODIMM 188 - AFLT4 */
+		>;
+	};
+
+	pinctrl_gpio_io5: io5grp {
+		fsl,pins = <
+			IMX8QXP_ESAI0_SCKT_LSIO_GPIO0_IO03			0x00000020 /* SODIMM 58 - FLT5 */
+			IMX8QXP_SPI3_SDI_LSIO_GPIO0_IO15			0x00000020 /* SODIMM 64 - DIN5 / DOI_LVL */
+			IMX8QXP_SPI3_SDO_LSIO_GPIO0_IO14			0x00000040 /* SODIMM 66 - PDEN5 / DI_EN */
+			IMX8QXP_SPI3_CS0_LSIO_GPIO0_IO16			0x00000040 /* SODIMM 68 - DOUT5 / IN */
+		>;
+	};
+
+	pinctrl_gpio_io6: io6grp {
+		fsl,pins = <
+			IMX8QXP_USDHC1_RESET_B_LSIO_GPIO4_IO19		0x00000020 /* SODIMM 44 - FLT6 */
+			IMX8QXP_MCLK_IN1_ADMA_LCDIF_EN				0x00000060 /* SODIMM 44 - reseve unused MCLK_IN1 */
+			IMX8QXP_SPDIF0_EXT_CLK_LSIO_GPIO0_IO12		0x00000020 /* SODIMM 52 - DIN6 / DOI_LVL */
+			IMX8QXP_SPI3_SCK_LSIO_GPIO0_IO13			0x00000040 /* SODIMM 54 - PDEN6 / DI_EN */
+			IMX8QXP_MCLK_OUT0_LSIO_GPIO0_IO20			0x00000040 /* SODIMM 56 - DOUT6 / IN */
+		>;
+	};
+};
+
+&adc0 {
+	status = "okay";
+};
+
+&flexcan2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flexcan2 &pinctrl_can_supply>;
+	status = "okay";
+};
+
+&lsio_gpio0 {
+	gpio-line-names = "",
+			  "IO1_FLT",
+			  "",
+			  "IO5_FLT",
+			  "IO1_DIEN",
+			  "IO1_DIN",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "IO6_DIN",
+			  "IO6_DIEN",
+			  "IO5_DIEN",
+			  "IO5_DIN",
+			  "IO5_DOUT",
+			  "",
+			  "",
+			  "IO1_DOUT",
+			  "IO6_DOUT",
+			  "",
+			  "",
+			  "",
+			  "CAN_SUPPLY_ENABLE",
+			  "IO3_ACUREN",
+			  "",
+			  "",
+			  "",
+			  "LED_RED_ACTIVITY",
+			  "LED_GREEN_HEARTBEAT",
+			  "IO2_DOUT";
+};
+
+&lsio_gpio1 {
+	gpio-line-names = "IO1_ACUREN",
+			  "IO2_FLT",
+			  "IO1_AFLT",
+			  "IO2_AFLT",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "LED_RED_STATUS",
+			  "LED_GREEN_STATUS",
+			  "",
+			  "",
+			  "",
+			  "BP_SUPPLY_ENABLE",
+			  "IO4_ACUREN",
+			  "IO4_AFLT",
+			  "IO3_DIEN";
+};
+
+&lsio_gpio2 {
+	gpio-line-names = "LED_GREEN_ACTIVITY";
+};
+
+&lsio_gpio3 {
+	gpio-line-names = "IO2_DIN",
+			  "",
+			  "",
+			  "LED_RED_DISK",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "RS485_SUPPLY_STATUS",
+			  "RS485_SUPPLY_ENABLE",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "IO3_DOUT",
+			  "IO4_FLT",
+			  "IO4_DIN",
+			  "IO2_DIEN",
+			  "IO2_ACUREN",
+			  "IO3_FLT",
+			  "IO3_DIN";
+};
+
+&lsio_gpio4 {
+	gpio-line-names = "",
+			  "",
+			  "",
+			  "USBH_VBUS",
+			  "IO4_DIEN",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "IO6_FLT",
+			  "",
+			  "",
+			  "FEC2_PHY_RESET",
+			  "",
+			  "IO3_AFLT",
+			  "BP_SUPPLY_STATUS",
+			  "",
+			  "CAN_SUPPLY_STATUS";
+};
+
+&lsio_gpio5 {
+	gpio-line-names = "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "",
+			  "IO4_DOUT",
+			  "USBO_CABLE_DET";
+};
+
+&lpuart0 {
+	pinctrl-0 = <&pinctrl_backplanebus>;
+	linux,rs485-enabled-at-boot-time;
+	uart-has-rtscts;
+	status = "okay";
+};
+
+&lpuart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_rs485>;
+	linux,rs485-enabled-at-boot-time;
+	uart-has-rtscts;
+	status = "okay";
+};
