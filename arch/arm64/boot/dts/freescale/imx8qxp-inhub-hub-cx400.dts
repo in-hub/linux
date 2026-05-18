@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright 2026 in.hub GmbH
+ */
+
+/dts-v1/;
+
+#include "imx8qxp-colibri-inhub-base.dtsi"
+
+/ {
+	model = "in.hub HUB-CX400";
+	compatible = "inhub,hub-cx400", "fsl,imx8qxp";
+};
